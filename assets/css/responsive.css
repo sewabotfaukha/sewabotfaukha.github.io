@@ -1,0 +1,105 @@
+/* ==========================================================================
+   RESPONSIVE — Breakpoint adjustments
+   ========================================================================== */
+
+/* ---- Tablet ---- */
+@media (max-width: 1024px) {
+  #hero-title {
+    font-size: clamp(2.8rem, 11vw, 6.5rem);
+  }
+
+  #sidebar {
+    width: min(320px, 85vw);
+  }
+
+  #minimap {
+    width: 130px;
+    height: 130px;
+  }
+}
+
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  #hero-content {
+    gap: var(--space-sm);
+    padding: var(--space-md);
+  }
+
+  #hero-kicker {
+    letter-spacing: 0.22em;
+    font-size: 10px;
+  }
+
+  #hero-title {
+    font-size: clamp(2.6rem, 16vw, 4.5rem);
+  }
+
+  #hero-subtitle {
+    font-size: 0.85rem;
+    padding: 0 var(--space-sm);
+  }
+
+  #hero-cta {
+    margin-top: var(--space-lg);
+    padding: 14px 36px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+
+  #hero-scroll-hint {
+    bottom: var(--space-lg);
+  }
+
+  #topbar {
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  #brand-name {
+    font-size: var(--fs-sm);
+  }
+
+  #search-container {
+    order: 3;
+    width: 100%;
+    max-width: none;
+  }
+
+  #sidebar {
+    width: 100%;
+    border-radius: 0;
+  }
+
+  .sidebar-logo,
+  .sidebar-galaxy-swatch {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sidebar-title {
+    font-size: var(--fs-md);
+  }
+
+  #planet-tooltip {
+    display: none; /* hover tooltips don't apply on touch devices */
+  }
+
+  #minimap {
+    width: 96px;
+    height: 96px;
+    bottom: var(--space-md);
+    right: var(--space-md);
+  }
+
+  #hud {
+    font-size: 10px;
+    bottom: var(--space-md);
+    left: var(--space-md);
+  }
+
+  #loading-title {
+    font-size: var(--fs-lg);
+    letter-spacing: 0.15em;
+  }
+}

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "search",
+    "name": "Search",
+    "description": "Search engines and information discovery.",
+    "color": "#5b8cff",
+    "particleCount": 2200,
+    "radius": 240
+  },
+  {
+    "id": "ai",
+    "name": "AI",
+    "description": "Artificial intelligence platforms and tools.",
+    "color": "#8a5bff",
+    "particleCount": 2400,
+    "radius": 250
+  },
+  {
+    "id": "coding",
+    "name": "Coding",
+    "description": "Programming languages, IDEs, and code resources.",
+    "color": "#4adba0",
+    "particleCount": 2000,
+    "radius": 220
+  },
+  {
+    "id": "developer",
+    "name": "Developer",
+    "description": "Developer tools, APIs, and infrastructure.",
+    "color": "#2fd4d9",
+    "particleCount": 2100,
+    "radius": 230
+  },
+  {
+    "id": "social",
+    "name": "Social",
+    "description": "Social networks and communication platforms.",
+    "color": "#ff5b9e",
+    "particleCount": 2600,
+    "radius": 260
+  },
+  {
+    "id": "education",
+    "name": "Education",
+    "description": "Learning platforms and educational resources.",
+    "color": "#ffb454",
+    "particleCount": 1900,
+    "radius": 210
+  },
+  {
+    "id": "cloud",
+    "name": "Cloud",
+    "description": "Cloud computing and storage services.",
+    "color": "#7a8cff",
+    "particleCount": 2000,
+    "radius": 225
+  },
+  {
+    "id": "gaming",
+    "name": "Gaming",
+    "description": "Gaming platforms, stores, and communities.",
+    "color": "#c45bff",
+    "particleCount": 2300,
+    "radius": 245
+  },
+  {
+    "id": "shopping",
+    "name": "Shopping",
+    "description": "E-commerce and online marketplaces.",
+    "color": "#ff8a5b",
+    "particleCount": 2100,
+    "radius": 230
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "description": "Banking, payments, and financial platforms.",
+    "color": "#4ade80",
+    "particleCount": 1900,
+    "radius": 215
+  },
+  {
+    "id": "entertainment",
+    "name": "Entertainment",
+    "description": "Streaming, music, and entertainment platforms.",
+    "color": "#ff4d8d",
+    "particleCount": 2200,
+    "radius": 235
+  },
+  {
+    "id": "news",
+    "name": "News",
+    "description": "News outlets and current-affairs publishers.",
+    "color": "#9ca3ff",
+    "particleCount": 1800,
+    "radius": 205
+  }
+]
