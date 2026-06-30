@@ -93,6 +93,13 @@ export class Planet {
     this.isSelected = false;
     this._baseScale = 1;
 
+    // Focus-mode dim state (Phase 9 intelligent search) — when another
+    // planet is focused via search or click, every other planet smoothly
+    // dims instead of snapping, so the universe still feels alive while
+    // attention is drawn to the selected one.
+    this.isDimmed = false;
+    this._dimAmount = 0; // smoothed 0 (normal) .. 1 (fully dimmed)
+
     // Tag every raycastable mesh with a back-reference to this Planet
     // instance, so the manager's raycaster can resolve hits directly.
     this.object.userData.planet = this;
@@ -145,7 +152,10 @@ export class Planet {
     // Fresnel-style glow shell: brighter at the silhouette edge, transparent
     // facing the camera — the classic cheap "atmosphere" look.
     const material = new THREE.ShaderMaterial({
-      uniforms: { uColor: { value: this.color.clone() } },
+      uniforms: {
+        uColor: { value: this.color.clone() },
+        uDim: { value: 0 },
+      },
       vertexShader: /* glsl */ `
         varying vec3 vNormal;
         void main() {
@@ -155,10 +165,11 @@ export class Planet {
       `,
       fragmentShader: /* glsl */ `
         uniform vec3 uColor;
+        uniform float uDim;
         varying vec3 vNormal;
         void main() {
           float intensity = pow(0.65 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.5);
-          gl_FragColor = vec4(uColor, clamp(intensity, 0.0, 1.0));
+          gl_FragColor = vec4(uColor, clamp(intensity, 0.0, 1.0) * (1.0 - uDim * 0.85));
         }
       `,
       transparent: true,
@@ -245,11 +256,31 @@ export class Planet {
       Math.sin(elapsed * this._floatSpeed + this._floatPhase) * this._floatAmplitude;
     this.object.position.y = this.basePosition.y + floatOffset;
 
-    // Glow pulse — sprite scale breathing, stronger while hovered
+    // Smoothly approach the dim target rather than snapping — keeps focus
+    // mode transitions (Phase 9) feeling cinematic instead of abrupt.
+    const dimTarget = this.isDimmed ? 1 : 0;
+    this._dimAmount += (dimTarget - this._dimAmount) * Math.min(delta * 4, 1);
+    const dimMul = 1 - this._dimAmount * 0.78;
+
+    this.surfaceMesh.material.color.copy(this.color).multiplyScalar(dimMul);
+    this.surfaceMesh.material.emissiveIntensity = 0.06 * dimMul;
+    this.cloudMesh.material.opacity = 0.45 * dimMul;
+    this.atmosphereMesh.material.uniforms.uDim.value = this._dimAmount;
+    if (this.ringMesh) this.ringMesh.material.opacity = 0.55 * dimMul;
+    if (this.moonMesh) this.moonMesh.material.color.setScalar(0.8 * dimMul + 0.2);
+
+    // Glow pulse — sprite scale breathing. Hover gives the strongest boost
+    // (transient, mouse-driven); a selected/focused planet (search result
+    // or click) gets a sustained, gentler pulse so it stays visually
+    // "switched on" even without the cursor over it.
     const pulse = 0.9 + Math.sin(elapsed * 1.4 + this._glowPhase) * 0.1;
-    const hoverBoost = this.isHovered ? 1.6 : 1;
+    const focusPulse = this.isSelected
+      ? 1 + Math.sin(elapsed * 2.2 + this._glowPhase) * 0.12
+      : 1;
+    const hoverBoost = this.isHovered ? 1.6 : this.isSelected ? 1.35 * focusPulse : 1;
     this.glowSprite.scale.setScalar(this.radius * 4.5 * pulse * hoverBoost);
-    this.glowSprite.material.opacity = (this.isHovered ? 0.85 : 0.5) * pulse;
+    this.glowSprite.material.opacity =
+      (this.isHovered ? 0.85 : this.isSelected ? 0.75 : 0.5) * pulse * dimMul;
 
     // Moon orbit, if present
     if (this.hasMoon) {
@@ -262,9 +293,11 @@ export class Planet {
       this.moonMesh.rotation.y += delta * 0.5;
     }
 
-    // Hover scale — smoothly approach the target scale rather than snapping,
-    // giving the "scale membesar" interaction a soft, premium feel.
-    const targetScale = this.isHovered ? 1.18 : 1;
+    // Hover/select scale — smoothly approach the target scale rather than
+    // snapping, giving the "scale membesar" interaction a soft, premium
+    // feel. Selected (focused) planets settle to a smaller sustained scale
+    // than an active hover, so hovering still reads as the "stronger" state.
+    const targetScale = this.isHovered ? 1.18 : this.isSelected ? 1.1 : 1;
     this._baseScale += (targetScale - this._baseScale) * Math.min(delta * 6, 1);
     this.object.scale.setScalar(this._baseScale);
   }
@@ -274,9 +307,16 @@ export class Planet {
     this.isHovered = value;
   }
 
-  /** Called by PlanetManager when this planet is clicked/selected */
+  /** Called by PlanetManager when this planet is clicked/selected, or
+   * focused via the Phase 9 intelligent search result selection. */
   setSelected(value) {
     this.isSelected = value;
+  }
+
+  /** Called by PlanetManager's focus mode — true dims this planet down
+   * (used for every planet except the one currently focused/searched). */
+  setDimmed(value) {
+    this.isDimmed = value;
   }
 
   /** Every mesh that should be tested by the raycaster for this planet */

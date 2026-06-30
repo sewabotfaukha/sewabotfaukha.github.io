@@ -12,6 +12,38 @@ import { loadJSON } from "./utils.js";
 
 const DATA_PATH = "assets/data/galaxies.json";
 
+/* ==========================================================================
+   SHARED CIRCULAR POINT SPRITE — same fix as space.js: THREE.PointsMaterial
+   renders square points with no `map`, which becomes a visible square
+   artifact on close zoom. This soft circular gradient masks each particle
+   into a clean dot instead.
+   ========================================================================== */
+let sharedCirclePointTexture = null;
+function getCirclePointTexture() {
+  if (sharedCirclePointTexture) return sharedCirclePointTexture;
+
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const gradient = ctx.createRadialGradient(
+    size / 2, size / 2, 0,
+    size / 2, size / 2, size / 2
+  );
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.5, "rgba(255,255,255,0.55)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  sharedCirclePointTexture = new THREE.CanvasTexture(canvas);
+  sharedCirclePointTexture.needsUpdate = true;
+  return sharedCirclePointTexture;
+}
+
 /**
  * Loads galaxy config data and builds the full galaxy system.
  * Returns { group, galaxies, update } where:
@@ -51,7 +83,18 @@ export async function createGalaxySystem() {
     for (const fn of updaters) fn(delta, elapsed);
   }
 
-  return { group, galaxies, update };
+  /**
+   * Phase 9 focus mode — dims every galaxy except the one matching
+   * `categoryId` (the focused planet's category). Pass null/undefined to
+   * clear focus and bring every galaxy back to full brightness.
+   */
+  function setFocusCategory(categoryId) {
+    for (const g of galaxies) {
+      g.object.userData.dimTarget = categoryId && g.id !== categoryId ? 1 : 0;
+    }
+  }
+
+  return { group, galaxies, update, setFocusCategory };
 }
 
 /* ==========================================================================
@@ -118,12 +161,28 @@ function buildGalaxy(config, placement) {
   // perfect unison — reinforces the "alive" feel from the space environment.
   const spinSpeed = 0.02 + hashToUnit(config.id) * 0.03;
 
+  // Base opacities captured once so the Phase 9 focus-mode dim factor can
+  // always be computed fresh from these instead of compounding each frame.
+  const baseHazeOpacity = haze.material.opacity;
+  const baseParticleOpacity = particles.material.opacity;
+  const baseGlowOpacity = glow.material.opacity;
+  let dimAmount = 0;
+  object.userData.dimTarget = 0;
+
   function update(delta, elapsed) {
     object.rotation.y += spinSpeed * delta;
     // Subtle glow pulse, offset per-galaxy via its hash so they don't sync
     const pulse = 0.85 + Math.sin(elapsed * 0.6 + hashToUnit(config.id) * 10) * 0.15;
     glow.scale.setScalar(pulse);
-    label.material.opacity = 0.75 + Math.sin(elapsed * 0.8) * 0.15;
+
+    // Smoothly approach the focus-mode dim target (set via setFocusCategory)
+    dimAmount += ((object.userData.dimTarget ?? 0) - dimAmount) * Math.min(delta * 3, 1);
+    const dimMul = 1 - dimAmount * 0.7;
+
+    haze.material.opacity = baseHazeOpacity * dimMul;
+    particles.material.opacity = baseParticleOpacity * dimMul;
+    glow.material.opacity = baseGlowOpacity * dimMul;
+    label.material.opacity = (0.75 + Math.sin(elapsed * 0.8) * 0.15) * dimMul;
   }
 
   return { object, update };
@@ -177,6 +236,8 @@ function createGalaxyParticles(color, radius, particleCount) {
     size: 2.6,
     sizeAttenuation: true,
     vertexColors: true,
+    map: getCirclePointTexture(),
+    alphaMap: getCirclePointTexture(),
     transparent: true,
     opacity: 0.9,
     depthWrite: false,

@@ -42,6 +42,9 @@ export async function createScene(camera, domElement, planetCallbacks = {}) {
   scene.add(galaxySystem.group);
   scene.userData.galaxyUpdate = galaxySystem.update;
   scene.userData.galaxies = galaxySystem.galaxies;
+  // Exposed whole (not just .galaxies/.update) so Phase 9's intelligent
+  // search can call galaxySystem.setFocusCategory() to dim other galaxies.
+  scene.userData.galaxySystem = galaxySystem;
 
   // Planet Engine — every website from assets/data/websites.json becomes a
   // Planet, placed inside its category's galaxy. PlanetManager owns hover/

@@ -74,6 +74,21 @@
     <!-- Three.js render target -->
     <canvas id="scene-canvas" aria-label="3D internet universe canvas"></canvas>
 
+    <!-- Focus Mode overlay (Phase 9) — soft blur + vignette behind the
+         focused planet's UI, toggled via .is-active by ui.js -->
+    <div id="focus-blur-overlay" aria-hidden="true"></div>
+
+    <!-- Focus Mode persistent label (Phase 9) — name / category / owner
+         stay visible while a planet is focused, independent of the sidebar -->
+    <div id="focus-label" hidden>
+      <span id="focus-label-name"></span>
+      <span id="focus-label-meta">
+        <span id="focus-label-category"></span>
+        <span id="focus-label-dot">•</span>
+        <span id="focus-label-owner"></span>
+      </span>
+    </div>
+
     <!-- Top bar: search -->
     <header id="topbar">
       <div id="brand">
@@ -113,6 +128,11 @@
         <span id="tooltip-dot">•</span>
         <span id="tooltip-visitors"></span>
       </span>
+    </div>
+
+    <!-- Hyperlane hover tooltip (Phase 10) — "Source ➜ Target" label -->
+    <div id="hyperlane-tooltip" role="tooltip" hidden>
+      <span id="hyperlane-tooltip-label"></span>
     </div>
 
     <!-- Minimap -->

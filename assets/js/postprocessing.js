@@ -24,9 +24,9 @@ export function createComposer(renderer, scene, camera) {
 
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.55, // strength
+    0.35, // strength — reduced from 0.55 to avoid overexposed/blown-out planets
     0.4,  // radius
-    0.15  // threshold — only sufficiently bright pixels bloom
+    0.25  // threshold — raised slightly so only the brightest highlights bloom
   );
   composer.addPass(bloomPass);
 

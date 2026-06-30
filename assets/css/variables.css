@@ -66,6 +66,7 @@
 
   /* ---- Z-index scale ---- */
   --z-canvas: 0;
+  --z-focus: 15;
   --z-hud: 10;
   --z-topbar: 20;
   --z-sidebar: 30;

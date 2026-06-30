@@ -12,6 +12,7 @@
 // ==========================================================================
 
 import * as THREE from "three";
+import gsap from "gsap";
 import { loadJSON } from "./utils.js";
 import { Planet } from "./planet.js";
 
@@ -41,6 +42,11 @@ export class PlanetManager {
     this._pointer = new THREE.Vector2();
     this._hoveredPlanet = null;
     this._selectedPlanet = null;
+
+    // Phase 9 focus mode — the currently focused (search-selected or
+    // clicked) planet's "hyperlanes" to its connected sites.
+    this._focusedId = null;
+    this._hyperlaneGroup = null;
 
     this._onPointerMove = this._onPointerMove.bind(this);
     this._onClick = this._onClick.bind(this);
@@ -102,6 +108,108 @@ export class PlanetManager {
     this.group.remove(planet.object);
     planet.dispose();
     this.planets.delete(id);
+  }
+
+  /** Look up a live Planet instance by its website id — used by Phase 9's
+   * intelligent search to resolve a search result into a flyable target. */
+  getPlanetById(id) {
+    return this.planets.get(id) ?? null;
+  }
+
+  /* ========================================================================
+     FOCUS MODE (Phase 9) — used by both direct planet clicks and search
+     result selection so the experience is consistent either way: the
+     target planet gets the "selected" highlight, every other planet dims,
+     and glowing hyperlane lines light up to its connected sites.
+     ======================================================================== */
+
+  /** Focuses a single planet by id. Returns the Planet instance, or null
+   * if no planet with that id exists. */
+  focusPlanet(id) {
+    const planet = this.planets.get(id);
+    if (!planet) return null;
+
+    this._selectedPlanet?.setSelected(false);
+    planet.setSelected(true);
+    this._selectedPlanet = planet;
+    this._focusedId = id;
+
+    for (const p of this.planets.values()) {
+      p.setDimmed(p.id !== id);
+    }
+
+    this._buildHyperlanes(planet);
+    return planet;
+  }
+
+  /** Clears focus mode — every planet returns to normal brightness and any
+   * hyperlane lines fade out and are removed. */
+  clearFocus() {
+    this._selectedPlanet?.setSelected(false);
+    this._selectedPlanet = null;
+    this._focusedId = null;
+
+    for (const p of this.planets.values()) {
+      p.setDimmed(false);
+    }
+
+    this._clearHyperlanes();
+  }
+
+  /** Builds glowing line(s) from `planet` to each of its connected sites
+   * (planet.data.connections, the same array the sidebar's "Related
+   * Websites" list already uses), fading them in with GSAP. */
+  _buildHyperlanes(planet) {
+    this._clearHyperlanes();
+
+    const relatedIds = Array.isArray(planet.data.connections) ? planet.data.connections : [];
+    const targets = relatedIds.map((id) => this.planets.get(id)).filter(Boolean);
+    if (targets.length === 0) return;
+
+    const group = new THREE.Group();
+    group.name = "hyperlanes";
+
+    for (const target of targets) {
+      const points = [planet.object.position.clone(), target.object.position.clone()];
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      const line = new THREE.Line(geometry, material);
+      group.add(line);
+      gsap.to(material, { opacity: 0.65, duration: 0.8, ease: "power2.out" });
+    }
+
+    this.group.add(group);
+    this._hyperlaneGroup = group;
+  }
+
+  /** Fades out and disposes any active hyperlane lines */
+  _clearHyperlanes() {
+    if (!this._hyperlaneGroup) return;
+
+    const group = this._hyperlaneGroup;
+    this._hyperlaneGroup = null;
+
+    for (const line of group.children) {
+      gsap.killTweensOf(line.material);
+      gsap.to(line.material, {
+        opacity: 0,
+        duration: 0.35,
+        ease: "power1.in",
+        onComplete: () => {
+          line.geometry.dispose();
+          line.material.dispose();
+        },
+      });
+    }
+    // Removed after the fade-out tween has had time to run; cheap enough
+    // (a handful of lines max) not to need precise completion tracking.
+    gsap.delayedCall(0.4, () => this.group.remove(group));
   }
 
   /** Called once per frame from main.js */
@@ -179,17 +287,16 @@ export class PlanetManager {
     this._updatePointer(event);
     const planet = this._raycastPlanet();
 
-    // Click only selects the planet visually here — opening the sidebar UI
-    // is handled by whoever passed in onClick (main.js -> ui.js), keeping
-    // PlanetManager unaware of sidebar/DOM specifics.
-    this._selectedPlanet?.setSelected(false);
-    planet?.setSelected(true);
-    this._selectedPlanet = planet ?? null;
-
+    // Click and search selection now share the same focus-mode path
+    // (dim other planets, light up hyperlanes) — opening the sidebar UI
+    // itself is still handled by whoever passed in onClick (main.js ->
+    // ui.js), keeping PlanetManager unaware of sidebar/DOM specifics.
     if (planet) {
+      this.focusPlanet(planet.id);
       const relatedWebsites = this._resolveRelatedWebsites(planet.data);
       this.onClick?.(planet, { ...planet.data, relatedWebsites });
     } else {
+      this.clearFocus();
       this.onClick?.(null, null);
     }
   }

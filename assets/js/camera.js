@@ -73,3 +73,51 @@ export function flyToGalaxy(camera, controls, galaxy, options = {}) {
 
   return tl;
 }
+
+/**
+ * Smoothly flies the camera to "visit" a single planet (used by Phase 9's
+ * intelligent search). Same approach as flyToGalaxy — ease both the camera
+ * position and the OrbitControls target together so the planet ends up
+ * centered on screen with no snap once the user takes control again.
+ *
+ * @param {THREE.PerspectiveCamera} camera
+ * @param {OrbitControls} controls
+ * @param {Planet} planet - a Planet instance (planet.js), has .object.position + .radius
+ * @param {object} [options]
+ * @param {number} [options.duration=2]
+ * @param {Function} [options.onComplete]
+ */
+export function flyToPlanet(camera, controls, planet, options = {}) {
+  const { duration = 2, onComplete } = options;
+
+  // View distance proportional to the planet's own radius so small and
+  // large planets both end up framed nicely, not too close/too far.
+  const viewDistance = Math.max(planet.radius * 7, 28);
+  const direction = new THREE.Vector3(0.35, 0.2, 1).normalize();
+  const targetPos = planet.object.position;
+  const destination = targetPos.clone().add(direction.multiplyScalar(viewDistance));
+
+  const tl = gsap.timeline({ defaults: { ease: "power3.inOut" } });
+
+  tl.to(camera.position, {
+    x: destination.x,
+    y: destination.y,
+    z: destination.z,
+    duration,
+    onUpdate: () => camera.updateProjectionMatrix(),
+  });
+
+  tl.to(
+    controls.target,
+    {
+      x: targetPos.x,
+      y: targetPos.y,
+      z: targetPos.z,
+      duration,
+      onComplete,
+    },
+    "<"
+  );
+
+  return tl;
+}

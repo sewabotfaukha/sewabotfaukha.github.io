@@ -18,6 +18,12 @@
   50% { box-shadow: 0 0 18px var(--color-accent-glow); }
 }
 
+/* ---- Phase 9: search empty-state icon pulse ---- */
+@keyframes search-empty-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.12); opacity: 0.9; }
+}
+
 /* ---- Utility classes (toggled by JS) ---- */
 .is-hidden {
   display: none !important;

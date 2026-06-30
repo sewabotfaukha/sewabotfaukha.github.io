@@ -9,6 +9,40 @@
 
 import * as THREE from "three";
 
+/* ==========================================================================
+   SHARED CIRCULAR POINT SPRITE — THREE.PointsMaterial renders perfectly
+   square points when no `map` is supplied (gl_PointCoord without a mask).
+   At normal distance the squareness is hidden by small point size, but on
+   close zoom (large gl_PointSize) it becomes an obvious square artifact.
+   This soft radial-gradient texture, shared by every plain PointsMaterial
+   in this file, masks each point into a clean soft circle instead.
+   ========================================================================== */
+let sharedCirclePointTexture = null;
+function getCirclePointTexture() {
+  if (sharedCirclePointTexture) return sharedCirclePointTexture;
+
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  const gradient = ctx.createRadialGradient(
+    size / 2, size / 2, 0,
+    size / 2, size / 2, size / 2
+  );
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.5, "rgba(255,255,255,0.55)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+
+  sharedCirclePointTexture = new THREE.CanvasTexture(canvas);
+  sharedCirclePointTexture.needsUpdate = true;
+  return sharedCirclePointTexture;
+}
+
 /**
  * Creates the full space environment and returns a group plus an update()
  * function the render loop calls every frame (drift, shooting stars, light).
@@ -177,6 +211,8 @@ function createMilkyWayBand(starCount = 7000, radius = 3200) {
     size: 3.5,
     sizeAttenuation: true,
     vertexColors: true,
+    map: getCirclePointTexture(),
+    alphaMap: getCirclePointTexture(),
     transparent: true,
     opacity: 0.55,
     depthWrite: false,
@@ -309,6 +345,8 @@ function createBackgroundGalaxy(starCount = 3000, radius = 600) {
     size: 4,
     sizeAttenuation: true,
     vertexColors: true,
+    map: getCirclePointTexture(),
+    alphaMap: getCirclePointTexture(),
     transparent: true,
     opacity: 0.85,
     depthWrite: false,
@@ -347,6 +385,8 @@ function createFloatingDust(particleCount = 1500, radius = 350) {
     size: 0.9,
     sizeAttenuation: true,
     color: 0xaeb8ff,
+    map: getCirclePointTexture(),
+    alphaMap: getCirclePointTexture(),
     transparent: true,
     opacity: 0.25,
     depthWrite: false,

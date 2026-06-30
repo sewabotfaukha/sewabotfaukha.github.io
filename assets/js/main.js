@@ -8,11 +8,12 @@ import * as THREE from "three";
 import { $ } from "./utils.js";
 import { runLoadingSequence, hideLoadingScreen } from "./loader.js";
 import { createScene } from "./scene.js";
-import { createCamera, updateCameraAspect, flyToGalaxy } from "./camera.js";
+import { createCamera, updateCameraAspect, flyToGalaxy, flyToPlanet } from "./camera.js";
 import { createRenderer, resizeRenderer } from "./renderer.js";
 import { createControls } from "./controls.js";
 import { createComposer, resizeComposer } from "./postprocessing.js";
 import { initUI, updateHUD, handlePlanetHover, handlePlanetClick } from "./ui.js";
+import { createHyperlaneNetwork } from "./hyperlane.js";
 
 /** Application state shared across the render loop */
 const state = {
@@ -23,6 +24,7 @@ const state = {
   composer: null,
   websites: [],
   connections: [],
+  hyperlaneNetwork: null,
 };
 
 const clock = new THREE.Clock();
@@ -51,14 +53,39 @@ async function bootstrap() {
   state.controls = createControls(state.camera, state.renderer.domElement);
   state.composer = createComposer(state.renderer, state.scene, state.camera);
 
+  // 3b. Build the Hyperlane Network (Phase 10) — curved glowing lanes
+  //     between connected websites, loaded entirely from connections.json.
+  //     Added to the scene AFTER PlanetManager so getPlanetById() resolves.
+  state.hyperlaneNetwork = await createHyperlaneNetwork({
+    planetManager: state.scene.userData.planetManager,
+    camera: state.camera,
+    domElement: canvas,
+    onHover: (lane, event) => {
+      if (lane) {
+        showHyperlaneTooltip(lane, event);
+        canvas.style.cursor = "pointer";
+      } else {
+        hideHyperlaneTooltip();
+      }
+    },
+  });
+  state.scene.add(state.hyperlaneNetwork.group);
+  state.scene.userData.hyperlaneNetwork = state.hyperlaneNetwork;
+
   // 3. Wire up DOM UI (search, sidebar, audio toggle) — pass the galaxy
   // list + a visit() callback so ui.js can let the user travel to a galaxy
   // (e.g. selecting one from search results) without main.js knowing about
   // DOM specifics, and without ui.js knowing about Three.js internals.
   initUI({
     galaxies: state.scene.userData.galaxies,
+    websites: state.websites,
+    planetManager: state.scene.userData.planetManager,
+    galaxySystem: state.scene.userData.galaxySystem,
+    hyperlaneNetwork: state.hyperlaneNetwork,
     visitGalaxy: (galaxy) =>
       flyToGalaxy(state.camera, state.controls, galaxy),
+    visitPlanet: (planet, options) =>
+      flyToPlanet(state.camera, state.controls, planet, options),
   });
 
   // 4. Start rendering immediately (scene exists behind the hero landing)
@@ -107,6 +134,9 @@ function animate() {
   // Animate every planet (rotation, floating, glow pulse, cloud drift, moons)
   state.scene.userData.planetUpdate?.(delta, elapsed);
 
+  // Animate hyperlane network (uniform uTime, smooth highlight/dim/hover lerp)
+  state.hyperlaneNetwork?.update(delta, elapsed);
+
   state.controls.update(); // required every frame for damping/inertia to work
   state.composer.render(); // renders scene through the bloom post-processing chain
 
@@ -125,6 +155,25 @@ function trackFPS() {
     frameCount = 0;
     lastFrameTime = now;
   }
+}
+
+/** Show the hyperlane hover tooltip (Phase 10) — "Source ➜ Target" label */
+function showHyperlaneTooltip(lane, event) {
+  const tooltip = $("hyperlane-tooltip");
+  if (!tooltip) return;
+
+  const srcName = lane.sourcePlanet?.data?.name ?? lane.source;
+  const tgtName = lane.targetPlanet?.data?.name ?? lane.target;
+  $("hyperlane-tooltip-label").textContent = `${srcName} ➜ ${tgtName}`;
+
+  tooltip.hidden = false;
+  tooltip.style.left = `${event.clientX + 14}px`;
+  tooltip.style.top = `${event.clientY - 28}px`;
+}
+
+function hideHyperlaneTooltip() {
+  const tooltip = $("hyperlane-tooltip");
+  if (tooltip) tooltip.hidden = true;
 }
 
 bootstrap().catch((err) => {
