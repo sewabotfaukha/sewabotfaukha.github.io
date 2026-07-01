@@ -1,21 +1,34 @@
 // ============================================================================
 // NEXUS — effects.js
-// Placeholder untuk efek visual tambahan: post-processing (bloom, grain),
-// sistem partikel, atau shader kustom. Belum diaktifkan pada tahap ini
-// sesuai instruksi ("belum perlu objek 3D").
+// Post-processing: bloom (glow premium) via EffectComposer.
+// Resolusi bloom diadaptasi turun di layar kecil demi performa.
 // ============================================================================
 
-/**
- * Placeholder inisialisasi efek. Saat ini tidak melakukan apa pun,
- * hanya memastikan modul dapat diimpor tanpa error dari main.js
- * sehingga struktur project sudah siap menerima fitur berikutnya.
- * @param {Object} context - { scene, camera, renderer } dari main.js
- */
-export function initEffects(context) {
-  // Sengaja kosong untuk saat ini.
-  // Rencana Prompt berikutnya:
-  // - EffectComposer + UnrealBloomPass untuk glow pada object 3D.
-  // - Sistem partikel ambient (starfield) memakai THREE.Points.
-  // - Custom shader material untuk signature object NEXUS.
-  return context;
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+export function initEffects({ scene, camera, renderer }) {
+  const isMobile = window.innerWidth < 768;
+
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  const bloom = new UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    isMobile ? 0.55 : 0.85, // strength
+    0.55, // radius
+    0.18  // threshold
+  );
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  function resize(width, height) {
+    composer.setSize(width, height);
+    bloom.setSize(width, height);
+  }
+
+  return { composer, bloom, resize };
 }

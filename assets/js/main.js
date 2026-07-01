@@ -1,160 +1,123 @@
 // ============================================================================
 // NEXUS — main.js
-// Entry point aplikasi. Merangkai seluruh modul (scene, camera, controls,
-// loader, animation, ui, effects) dan menjalankan render loop.
-//
-// Catatan perbaikan foundation:
-// - Seluruh inisialisasi dibungkus di dalam bootstrap() yang baru dipanggil
-//   setelah DOM benar-benar siap (DOMContentLoaded), meski secara teknis
-//   <script type="module"> sudah otomatis deferred. Ini eksplisit demi
-//   memastikan "semua element UI dibuat sebelum JavaScript dijalankan".
-// - Setiap akses DOM dicek null terlebih dahulu.
-// - try/catch + global error handler memastikan satu kegagalan kecil
-//   (misalnya WebGL tidak didukung) tidak membuat seluruh halaman rusak
-//   atau loader tersangkut selamanya.
+// Entry point. Merangkai scene, hero object (Crystal), lighting, background
+// hidup (stars/nebula/particles), cinematic camera rig, bloom composer,
+// dan SATU render loop (requestAnimationFrame) untuk semuanya.
 // ============================================================================
 
 import * as THREE from 'three';
 
-import { createScene } from './scene.js';
+import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting } from './scene.js';
 import { createCamera, updateCameraOnResize } from './camera.js';
-import { createControls } from './controls.js';
+import { createCameraRig } from './controls.js';
 import { createLoadingManager } from './loader.js';
-import { configureGsapDefaults, playIntroTimeline } from './animation.js';
+import { configureGsapDefaults, playIntroTimeline, initCardParallax, cameraFlyBump } from './animation.js';
 import { initUI, hideLoader } from './ui.js';
 import { initEffects } from './effects.js';
 
-/**
- * Bootstrap seluruh aplikasi. Dipanggil sekali setelah DOM siap.
- */
 function bootstrap() {
-  // ---------------------------------------------------------------------
-  // 1. Setup dasar: canvas, renderer, scene, camera, controls
-  // ---------------------------------------------------------------------
-
   const canvas = document.querySelector('#nexus-canvas');
-
   if (!canvas) {
-    // Tanpa canvas, WebGLRenderer tidak bisa dibuat dengan benar.
-    // Hentikan setup 3D secara aman (bukan crash), tapi tetap jalankan UI
-    // non-3D (tombol, loader) supaya halaman tetap fungsional.
-    console.error('[NEXUS] Elemen #nexus-canvas tidak ditemukan di DOM. Setup Three.js dilewati.');
+    console.error('[NEXUS] #nexus-canvas tidak ditemukan. Setup 3D dilewati.');
     safeInitNonThreeParts();
     return;
   }
 
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      alpha: true, // latar transparan supaya gradient CSS di belakang canvas terlihat
-    });
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
   } catch (err) {
-    console.error('[NEXUS] Gagal membuat WebGLRenderer (kemungkinan WebGL tidak didukung):', err);
+    console.error('[NEXUS] WebGLRenderer gagal dibuat:', err);
     safeInitNonThreeParts();
     return;
   }
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const isMobile = window.innerWidth < 768;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = createScene();
   const camera = createCamera(window.innerWidth / window.innerHeight);
-  const controls = createControls(camera, renderer.domElement);
+  const rig = createCameraRig(camera);
 
-  // LoadingManager disiapkan meski belum ada aset yang dimuat — begitu
-  // prompt berikutnya menambahkan model/tekstur, tinggal pakai `manager` ini.
-  createLoadingManager({
-    onLoad: () => hideLoader(),
-  });
+  const { group: heroGroup } = createHeroObject();
+  scene.add(heroGroup);
 
-  // Belum ada aset untuk dimuat pada tahap ini, jadi loader disembunyikan
-  // langsung setelah scene siap dirender.
+  const { pointViolet } = createLighting(scene);
+
+  const stars = createStarfield();
+  const particles = createAmbientParticles();
+  const nebula = createNebulaBackdrop();
+  scene.add(nebula, stars, particles);
+
+  createLoadingManager({ onLoad: () => hideLoader() });
   hideLoader(300);
 
-  initEffects({ scene, camera, renderer });
+  const { composer, resize: resizeEffects } = initEffects({ scene, camera, renderer });
 
-  // ---------------------------------------------------------------------
-  // 2. Resize handler — menjaga canvas & kamera tetap sinkron dengan viewport
-  // ---------------------------------------------------------------------
-
+  // -- Resize --------------------------------------------------------------
   function onResize() {
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-
-    updateCameraOnResize(camera, width, height);
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    updateCameraOnResize(camera, w, h);
+    renderer.setSize(w, h);
+    resizeEffects(w, h);
   }
-
   window.addEventListener('resize', onResize);
 
-  // ---------------------------------------------------------------------
-  // 3. Animation loop
-  // ---------------------------------------------------------------------
+  // -- Fly-bump kamera saat tombol Explore diklik ---------------------------
+  window.addEventListener('nexus:explore', () => cameraFlyBump(camera, rig.state));
+
+  // -- Animation loop (satu-satunya rAF loop di project ini) ---------------
+  const clock = new THREE.Clock();
+  let tiltX = 0;
+  let tiltY = 0;
+  let rotY = 0;
 
   function animate() {
     requestAnimationFrame(animate);
+    const elapsed = clock.getElapsedTime();
 
-    controls.update(); // wajib dipanggil setiap frame karena enableDamping aktif
+    rig.update(elapsed);
 
-    renderer.render(scene, camera);
+    // Object: melayang perlahan + rotasi sangat pelan + sedikit mengikuti mouse.
+    rotY += 0.0018;
+    tiltX += (rig.mouse.y * 0.18 - tiltX) * 0.04;
+    tiltY += (rig.mouse.x * 0.22 - tiltY) * 0.04;
+    heroGroup.position.y = Math.sin(elapsed * 0.6) * 0.16;
+    heroGroup.rotation.x = tiltX;
+    heroGroup.rotation.y = rotY + tiltY;
+
+    // Glow (point light violet) mengikuti posisi mouse.
+    pointViolet.position.x = -1.5 + rig.mouse.x * 1.5;
+    pointViolet.position.y = 1 - rig.mouse.y * 1.2;
+
+    // Background hidup: rotasi sangat pelan, tidak membebani performa.
+    stars.rotation.y = elapsed * 0.008;
+    particles.rotation.y = -elapsed * 0.015;
+    nebula.rotation.y = elapsed * 0.004;
+
+    composer.render();
   }
-
-  // ---------------------------------------------------------------------
-  // 4. Inisialisasi UI & GSAP, lalu mulai loop
-  // ---------------------------------------------------------------------
 
   safeInitNonThreeParts();
   animate();
 }
 
-/**
- * Inisialisasi bagian non-Three.js (GSAP + UI). Dipisah agar tetap bisa
- * dijalankan walau setup Three.js gagal (mis. WebGL tidak didukung),
- * sehingga tombol & loader tetap berfungsi.
- */
 function safeInitNonThreeParts() {
-  try {
-    configureGsapDefaults();
-  } catch (err) {
-    console.error('[NEXUS] Gagal mengonfigurasi GSAP defaults:', err);
-  }
-
-  try {
-    initUI();
-  } catch (err) {
-    console.error('[NEXUS] Gagal inisialisasi UI:', err);
-  }
-
-  try {
-    playIntroTimeline();
-  } catch (err) {
-    console.error('[NEXUS] Gagal menjalankan intro timeline GSAP:', err);
-  }
-
-  // Jaring pengaman terakhir: apa pun yang terjadi, loader tidak boleh
-  // tersangkut menutupi layar selamanya.
+  try { configureGsapDefaults(); } catch (err) { console.error('[NEXUS] GSAP defaults gagal:', err); }
+  try { initUI(); } catch (err) { console.error('[NEXUS] initUI gagal:', err); }
+  try { playIntroTimeline(); } catch (err) { console.error('[NEXUS] Intro timeline gagal:', err); }
+  try { initCardParallax(); } catch (err) { console.error('[NEXUS] Card parallax gagal:', err); }
   hideLoader(800);
 }
 
-// ----------------------------------------------------------------------------
-// Jaring pengaman global: catat error tak terduga ke console dengan jelas
-// dan pastikan loading screen tidak tersangkut jika terjadi error di luar
-// blok try/catch manapun.
-// ----------------------------------------------------------------------------
 window.addEventListener('error', (event) => {
   console.error('[NEXUS] Unhandled error:', event.error || event.message);
   hideLoader(0);
 });
 
-// ----------------------------------------------------------------------------
-// Jalankan bootstrap setelah DOM benar-benar siap. Modul ES sudah otomatis
-// deferred, tapi pengecekan ini eksplisit sesuai requirement:
-// "pastikan semua element UI dibuat sebelum JavaScript dijalankan".
-// ----------------------------------------------------------------------------
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', bootstrap);
 } else {

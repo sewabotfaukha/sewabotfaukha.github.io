@@ -119,6 +119,8 @@
   backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
   box-shadow: var(--glass-shadow);
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .hero__eyebrow {
@@ -192,6 +194,42 @@
   cursor: pointer;
   overflow: hidden;
   isolation: isolate;
+  --mx: 50%;
+  --my: 50%;
+}
+
+/* Glow yang mengikuti posisi kursor di atas tombol (di-update lewat JS via --mx/--my). */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(120px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.55), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-soft);
+  pointer-events: none;
+}
+
+.btn:hover::before {
+  opacity: 1;
+}
+
+.btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Ripple: elemen dibuat dinamis lewat JS (ui.js) saat klik. */
+.btn__ripple {
+  position: absolute;
+  z-index: 0;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: nexus-ripple 0.6s var(--ease-soft) forwards;
 }
 
 .btn__arrow {

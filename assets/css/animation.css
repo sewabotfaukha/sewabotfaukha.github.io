@@ -34,6 +34,18 @@
   animation: nexus-bounce 2.2s var(--ease-soft) infinite;
 }
 
+/* ---------- Ripple effect tombol (elemen dibuat dinamis via ui.js) ---------- */
+@keyframes nexus-ripple {
+  from {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(22);
+    opacity: 0;
+  }
+}
+
 /* ---------- Transisi hover umum untuk elemen interaktif ---------- */
 a, button, .btn {
   transition: transform var(--dur-fast) var(--ease-soft),

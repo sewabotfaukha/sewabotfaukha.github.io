@@ -1,36 +1,39 @@
 // ============================================================================
 // NEXUS — controls.js
-// Bertanggung jawab untuk membuat & mengonfigurasi OrbitControls.
+// BUKAN OrbitControls. Cinematic camera rig: idle drift halus + parallax
+// mengikuti posisi mouse, plus "impulse" yang dipakai animation.js untuk
+// fly-bump saat tombol Explore diklik.
 // ============================================================================
 
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+export function createCameraRig(camera) {
+  const baseZ = camera.position.z;
+  const mouse = { x: 0, y: 0 };
+  const state = { tiltX: 0, tiltY: 0, impulseZ: 0 };
 
-/**
- * Membuat instance OrbitControls yang terikat pada kamera & elemen DOM renderer.
- * @param {THREE.Camera} camera
- * @param {HTMLElement} domElement - biasanya renderer.domElement
- * @returns {OrbitControls}
- */
-export function createControls(camera, domElement) {
-  const controls = new OrbitControls(camera, domElement);
+  function onPointerMove(e) {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+  }
+  window.addEventListener('pointermove', onPointerMove);
 
-  // Damping membuat pergerakan kamera terasa halus & premium.
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
+  function update(elapsed) {
+    // Idle cinematic drift — sangat kecil, tidak pernah diam total.
+    const idleX = Math.sin(elapsed * 0.15) * 0.12;
+    const idleY = Math.cos(elapsed * 0.11) * 0.06;
 
-  // Batasi zoom & pan agar pengalaman tetap terarah (tidak "tersesat" di scene kosong).
-  controls.enablePan = false;
-  controls.minDistance = 3;
-  controls.maxDistance = 12;
+    // Parallax halus menuju posisi mouse (lerp, bukan snap).
+    state.tiltX += (mouse.x * 0.25 - state.tiltX) * 0.03;
+    state.tiltY += (-mouse.y * 0.16 - state.tiltY) * 0.03;
 
-  // Batasi rotasi vertikal agar kamera tidak terbalik.
-  controls.minPolarAngle = Math.PI / 4;
-  controls.maxPolarAngle = Math.PI - Math.PI / 4;
+    camera.position.x = idleX + state.tiltX;
+    camera.position.y = idleY + state.tiltY + 0.15;
+    camera.position.z = baseZ + state.impulseZ;
+    camera.lookAt(0, 0, 0);
+  }
 
-  // Auto-rotate lembut sebagai sentuhan "hidup" pada scene kosong —
-  // akan terasa lebih bermakna begitu object 3D ditambahkan nanti.
-  controls.autoRotate = true;
-  controls.autoRotateSpeed = 0.4;
+  function dispose() {
+    window.removeEventListener('pointermove', onPointerMove);
+  }
 
-  return controls;
+  return { update, dispose, state, mouse, baseZ };
 }
