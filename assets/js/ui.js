@@ -61,16 +61,20 @@ export function initUI({
 
 function initSidebar() {
   const sidebar = $("sidebar");
-  const closeBtn = $("sidebar-close");
 
-  // Closing the sidebar manually also exits Phase 9 focus mode (un-dims
-  // every planet/galaxy, fades out the blur overlay + focus label).
-  closeBtn?.addEventListener("click", () => exitFocusMode());
-
-  // Click-away: clicking the canvas with nothing under the cursor should
-  // also close the sidebar, matching the "click only selects" planet
-  // behavior — handled here since planetManager.js reports null on miss.
-  sidebar?.addEventListener("click", (event) => event.stopPropagation());
+  // Close button is injected dynamically into sidebar-content by the
+  // showPlanetSidebar template. Use event delegation on the sidebar itself
+  // so we don't need to re-bind on every content swap.
+  sidebar?.addEventListener("click", (event) => {
+    // Delegate close button click
+    if (event.target.closest("#sidebar-close")) {
+      exitFocusMode();
+      return;
+    }
+    // Stop click-through to canvas (so clicking inside sidebar doesn't
+    // deselect the planet)
+    event.stopPropagation();
+  });
 }
 
 /* ==========================================================================
@@ -85,14 +89,20 @@ function showGalaxySidebar(galaxy) {
   if (!content) return;
 
   content.innerHTML = `
-    <div class="sidebar-header">
-      <div class="sidebar-galaxy-swatch" style="background:${galaxy.color};"></div>
-      <div>
-        <h2 class="sidebar-title">${escapeHTML(galaxy.name)} Galaxy</h2>
+    <div class="sidebar-header-premium">
+      <div class="sidebar-galaxy-swatch" style="background:${galaxy.color}; box-shadow: 0 0 20px ${galaxy.color}55; border-radius:50%; width:52px; height:52px; flex-shrink:0;"></div>
+      <div class="sidebar-header-info">
+        <h2 class="sidebar-title-premium">${escapeHTML(galaxy.name)} Galaxy</h2>
         <p class="sidebar-subtitle">Category overview</p>
       </div>
+      <button id="sidebar-close" aria-label="Close sidebar" class="sidebar-close-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
-    <p class="sidebar-description">${escapeHTML(galaxy.description || "")}</p>
+    <div class="sidebar-divider" style="background: linear-gradient(90deg, ${galaxy.color}66, transparent); margin-bottom: var(--space-md);"></div>
+    <p class="sidebar-description-premium">${escapeHTML(galaxy.description || "")}</p>
   `;
 
   openSidebar();
@@ -100,6 +110,7 @@ function showGalaxySidebar(galaxy) {
 
 /**
  * Populate and reveal the sidebar with a website/planet's full details.
+ * Premium version: favicon logo, status badge, country, ripple button.
  * @param {object} site - website data (+ relatedWebsites) from
  *   planetManager.js's onClick callback, matching websites.json's format.
  */
@@ -109,16 +120,15 @@ function showPlanetSidebar(site) {
 
   const visitors = formatVisitors(site.visitors);
   const founded = site.founded ?? "—";
+  const country = site.country ?? "—";
 
-  // Phase 10: use hyperlane graph as authoritative connection list (richer
-  // than the static site.connections[] from websites.json, and guaranteed
-  // in sync with what's actually rendered as lanes in the scene).
+  // Phase 10: use hyperlane graph as authoritative connection list
   const hyperlaneConnections = ctx.hyperlaneNetwork?.getConnectionsForSite(site.id) ?? [];
   const related = hyperlaneConnections.length > 0
     ? hyperlaneConnections
     : (Array.isArray(site.relatedWebsites) ? site.relatedWebsites : []);
 
-  // Group by category for the "Category Connections" summary line
+  // Group by category for badge summary
   const categoryCount = related.reduce((acc, r) => {
     const cat = capitalize(r.category ?? "other");
     acc[cat] = (acc[cat] ?? 0) + 1;
@@ -128,58 +138,117 @@ function showPlanetSidebar(site) {
     .map(([cat, n]) => `<span class="sidebar-conn-badge">${escapeHTML(cat)} (${n})</span>`)
     .join(" ");
 
+  // Build favicon URL — try site's own logo field, fallback to Google favicon service
+  const faviconUrl = buildFaviconUrl(site);
+  const accentColor = site.color ?? "#5b8cff";
+  const accentColorAlpha = accentColor + "33";
+
   content.innerHTML = `
-    <div class="sidebar-header">
-      <div class="sidebar-logo" style="background:${site.color ?? "#5b8cff"};">
-        ${escapeHTML((site.name || "?").charAt(0))}
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <div class="sidebar-header-premium">
+      <div class="sidebar-logo-premium" style="--planet-color:${accentColor}; box-shadow: 0 0 24px ${accentColor}44, inset 0 1px 0 rgba(255,255,255,0.12);">
+        <img
+          class="sidebar-logo-img"
+          src="${escapeAttr(faviconUrl)}"
+          alt="${escapeHTML(site.name)} logo"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <span class="sidebar-logo-fallback" style="display:none; background:${accentColor};">${escapeHTML((site.name || "?").charAt(0).toUpperCase())}</span>
       </div>
-      <div>
-        <h2 class="sidebar-title">${escapeHTML(site.name)}</h2>
-        <p class="sidebar-subtitle">${escapeHTML(capitalize(site.category))}</p>
+
+      <div class="sidebar-header-info">
+        <h2 class="sidebar-title-premium">${escapeHTML(site.name)}</h2>
+        <div class="sidebar-header-meta">
+          <span class="sidebar-category-badge" style="color:${accentColor}; border-color:${accentColor}44; background:${accentColorAlpha};">
+            ${escapeHTML(capitalize(site.category))}
+          </span>
+          <span class="sidebar-status-dot"></span>
+          <span class="sidebar-status-label">Online</span>
+        </div>
+      </div>
+
+      <button id="sidebar-close" aria-label="Close sidebar" class="sidebar-close-btn">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── DIVIDER ─────────────────────────────────────────── -->
+    <div class="sidebar-divider" style="background: linear-gradient(90deg, ${accentColor}55, transparent);"></div>
+
+    <!-- ── DESCRIPTION ───────────────────────────────────────── -->
+    <p class="sidebar-description-premium">${escapeHTML(site.description || "")}</p>
+
+    <!-- ── META GRID ─────────────────────────────────────────── -->
+    <div class="sidebar-meta-grid">
+      <div class="sidebar-meta-card">
+        <span class="sidebar-meta-icon">🏢</span>
+        <div class="sidebar-meta-card-inner">
+          <dt class="sidebar-meta-label">Owner</dt>
+          <dd class="sidebar-meta-value">${escapeHTML(site.owner || "—")}</dd>
+        </div>
+      </div>
+      <div class="sidebar-meta-card">
+        <span class="sidebar-meta-icon">📅</span>
+        <div class="sidebar-meta-card-inner">
+          <dt class="sidebar-meta-label">Founded</dt>
+          <dd class="sidebar-meta-value">${escapeHTML(String(founded))}</dd>
+        </div>
+      </div>
+      <div class="sidebar-meta-card">
+        <span class="sidebar-meta-icon">👥</span>
+        <div class="sidebar-meta-card-inner">
+          <dt class="sidebar-meta-label">Visitors</dt>
+          <dd class="sidebar-meta-value">${escapeHTML(visitors)}</dd>
+        </div>
+      </div>
+      <div class="sidebar-meta-card">
+        <span class="sidebar-meta-icon">🌏</span>
+        <div class="sidebar-meta-card-inner">
+          <dt class="sidebar-meta-label">Country</dt>
+          <dd class="sidebar-meta-value">${escapeHTML(country)}</dd>
+        </div>
       </div>
     </div>
 
-    <p class="sidebar-description">${escapeHTML(site.description || "")}</p>
-
-    <dl class="sidebar-meta">
-      <div class="sidebar-meta-row">
-        <dt>Owner</dt><dd>${escapeHTML(site.owner || "—")}</dd>
-      </div>
-      <div class="sidebar-meta-row">
-        <dt>Founded</dt><dd>${escapeHTML(String(founded))}</dd>
-      </div>
-      <div class="sidebar-meta-row">
-        <dt>Visitors</dt><dd>${escapeHTML(visitors)}</dd>
-      </div>
-    </dl>
-
+    <!-- ── CONNECTED WEBSITES ────────────────────────────────── -->
     ${related.length > 0 ? `
-    <div class="sidebar-related">
-      <h3 class="sidebar-related-title">
-        Connected Websites
+    <div class="sidebar-related-premium">
+      <div class="sidebar-related-header">
+        <h3 class="sidebar-related-title-premium">Connected Websites</h3>
         <span class="sidebar-conn-count">${related.length}</span>
-      </h3>
+      </div>
       ${categoryBadges ? `<div class="sidebar-conn-categories">${categoryBadges}</div>` : ""}
-      <ul class="sidebar-related-list">
+      <ul class="sidebar-related-list-premium">
         ${related.map((r) => `
           <li>
-            <button type="button" class="sidebar-conn-item" data-fly-to="${escapeAttr(r.id)}">
-              <span class="sidebar-related-dot" style="background:${r.color ?? "#5b8cff"};"></span>
+            <button type="button" class="sidebar-conn-item-premium" data-fly-to="${escapeAttr(r.id)}">
+              <span class="sidebar-conn-dot-premium" style="background:${r.color ?? "#5b8cff"}; box-shadow: 0 0 6px ${r.color ?? "#5b8cff"}88;"></span>
               <span class="sidebar-conn-name">${escapeHTML(r.name)}</span>
               <span class="sidebar-conn-cat">${escapeHTML(capitalize(r.category))}</span>
+              <svg class="sidebar-conn-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </button>
           </li>
         `).join("")}
       </ul>
     </div>` : ""}
 
+    <!-- ── VISIT BUTTON ──────────────────────────────────────── -->
     <a
-      class="sidebar-visit-btn"
+      class="sidebar-visit-btn-premium"
       href="${escapeAttr(site.url || "#")}"
       target="_blank"
       rel="noopener noreferrer"
+      style="--planet-color:${accentColor};"
     >
-      Visit Website
+      <span class="sidebar-visit-btn-label">Visit Website</span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="sidebar-visit-ripple"></span>
     </a>
   `;
 
@@ -191,10 +260,49 @@ function showPlanetSidebar(site) {
     });
   });
 
+  // Ripple effect on visit button
+  const visitBtn = content.querySelector(".sidebar-visit-btn-premium");
+  if (visitBtn) {
+    visitBtn.addEventListener("click", (e) => {
+      const ripple = visitBtn.querySelector(".sidebar-visit-ripple");
+      if (!ripple) return;
+      const rect = visitBtn.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      ripple.style.left = x + "px";
+      ripple.style.top = y + "px";
+      ripple.classList.remove("is-active");
+      void ripple.offsetWidth; // reflow to restart animation
+      ripple.classList.add("is-active");
+    });
+  }
+
   openSidebar();
 }
 
-/** Slide the sidebar in from the right with GSAP, killing any in-flight tween */
+/** Build a favicon/logo URL for the given site.
+ *  Priority: site.logo → Google favicon service fallback. */
+function buildFaviconUrl(site) {
+  // If logo field points to a real asset path (not empty), use it directly
+  if (site.logo && !site.logo.includes("undefined")) {
+    return site.logo;
+  }
+  // Fallback: Google's favicon service (reliable, fast, free, no auth required)
+  if (site.url) {
+    try {
+      const domain = new URL(site.url).hostname;
+      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+    } catch { /* noop */ }
+  }
+  return "";
+}
+
+/** Detect mobile (≤640px) for bottom-sheet vs side-drawer behaviour */
+function isMobile() {
+  return window.innerWidth <= 640;
+}
+
+/** Slide the sidebar in — right drawer on desktop, bottom sheet on mobile */
 function openSidebar() {
   const sidebar = $("sidebar");
   if (!sidebar) return;
@@ -202,33 +310,83 @@ function openSidebar() {
   sidebar.removeAttribute("hidden");
   sidebarTimeline?.kill();
 
-  sidebarTimeline = gsap.timeline()
-    .fromTo(
-      sidebar,
-      { xPercent: 100, opacity: 0 },
-      { xPercent: 0, opacity: 1, duration: 0.55, ease: "power3.out" }
-    )
-    .fromTo(
-      "#sidebar-content > *",
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.4, stagger: 0.04, ease: "power2.out" },
-      "-=0.25"
-    );
+  const mobile = isMobile();
+
+  if (mobile) {
+    // Bottom sheet: slide up from below with scale + blur
+    gsap.set(sidebar, { yPercent: 100, opacity: 0, scale: 0.98, filter: "blur(6px)", xPercent: 0 });
+    sidebarTimeline = gsap.timeline()
+      .to(sidebar, {
+        yPercent: 0,
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 0.48,
+        ease: "power3.out",
+      })
+      .fromTo(
+        "#sidebar-content > *",
+        { opacity: 0, y: 10, filter: "blur(3px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, stagger: 0.045, ease: "power2.out" },
+        "-=0.2"
+      );
+  } else {
+    // Desktop: slide from the right with blur + scale
+    gsap.set(sidebar, { xPercent: 100, opacity: 0, scale: 0.97, filter: "blur(8px)", yPercent: 0 });
+    sidebarTimeline = gsap.timeline()
+      .to(sidebar, {
+        xPercent: 0,
+        opacity: 1,
+        scale: 1,
+        filter: "blur(0px)",
+        duration: 0.5,
+        ease: "power3.out",
+      })
+      .fromTo(
+        "#sidebar-content > *",
+        { opacity: 0, y: 14, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.38, stagger: 0.055, ease: "power2.out" },
+        "-=0.22"
+      );
+  }
 }
 
-/** Slide the sidebar back out, then hide it so it stops catching clicks */
+/** Slide the sidebar back out — reverse of openSidebar */
 function closeSidebar() {
   const sidebar = $("sidebar");
   if (!sidebar || sidebar.hasAttribute("hidden")) return;
 
   sidebarTimeline?.kill();
-  sidebarTimeline = gsap.to(sidebar, {
-    xPercent: 100,
-    opacity: 0,
-    duration: 0.4,
-    ease: "power2.in",
-    onComplete: () => sidebar.setAttribute("hidden", ""),
-  });
+
+  const mobile = isMobile();
+
+  if (mobile) {
+    sidebarTimeline = gsap.to(sidebar, {
+      yPercent: 100,
+      opacity: 0,
+      scale: 0.98,
+      filter: "blur(4px)",
+      duration: 0.35,
+      ease: "power2.in",
+      onComplete: () => {
+        sidebar.setAttribute("hidden", "");
+        gsap.set(sidebar, { filter: "blur(0px)", scale: 1, yPercent: 0 });
+      },
+    });
+  } else {
+    sidebarTimeline = gsap.to(sidebar, {
+      xPercent: 100,
+      opacity: 0,
+      scale: 0.97,
+      filter: "blur(6px)",
+      duration: 0.38,
+      ease: "power2.in",
+      onComplete: () => {
+        sidebar.setAttribute("hidden", "");
+        gsap.set(sidebar, { filter: "blur(0px)", scale: 1, xPercent: 0 });
+      },
+    });
+  }
 }
 
 function formatVisitors(visitors) {

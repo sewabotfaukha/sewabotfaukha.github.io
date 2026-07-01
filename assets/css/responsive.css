@@ -9,7 +9,7 @@
   }
 
   #sidebar {
-    width: min(320px, 85vw);
+    width: min(340px, 88vw);
   }
 
   #minimap {
@@ -66,11 +66,17 @@
     max-width: none;
   }
 
-  #sidebar {
-    width: 100%;
-    border-radius: 0;
+  /* Sidebar mobile (bottom sheet) — shape handled in layout.css */
+  .sidebar-logo-premium {
+    width: 50px;
+    height: 50px;
   }
 
+  .sidebar-title-premium {
+    font-size: var(--fs-md);
+  }
+
+  /* Legacy galaxy swatch */
   .sidebar-logo,
   .sidebar-galaxy-swatch {
     width: 44px;

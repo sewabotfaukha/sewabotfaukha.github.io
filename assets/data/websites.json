@@ -15,7 +15,8 @@
       "chatgpt",
       "wikipedia",
       "github"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "bing",
@@ -29,7 +30,8 @@
     "url": "https://bing.com",
     "visitors": 1778000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "duckduckgo",
@@ -43,7 +45,8 @@
     "url": "https://duckduckgo.com",
     "visitors": 1337000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "yahoo",
@@ -57,7 +60,8 @@
     "url": "https://search.yahoo.com",
     "visitors": 2095000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "baidu",
@@ -71,7 +75,8 @@
     "url": "https://baidu.com",
     "visitors": 987000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "China"
   },
   {
     "id": "yandex",
@@ -85,7 +90,8 @@
     "url": "https://yandex.com",
     "visitors": 1331000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "Russia"
   },
   {
     "id": "ecosia",
@@ -99,7 +105,8 @@
     "url": "https://ecosia.org",
     "visitors": 1926000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "brave_search",
@@ -113,7 +120,8 @@
     "url": "https://search.brave.com",
     "visitors": 2466000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "startpage",
@@ -127,7 +135,8 @@
     "url": "https://startpage.com",
     "visitors": 559000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "chatgpt",
@@ -144,7 +153,8 @@
     "connections": [
       "google",
       "claude"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "claude",
@@ -160,7 +170,8 @@
     "position": null,
     "connections": [
       "chatgpt"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "midjourney",
@@ -174,7 +185,8 @@
     "url": "https://midjourney.com",
     "visitors": 1902000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "gemini",
@@ -188,7 +200,8 @@
     "url": "https://gemini.google.com",
     "visitors": 2070000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "perplexity",
@@ -202,7 +215,8 @@
     "url": "https://perplexity.ai",
     "visitors": 806000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "huggingface",
@@ -216,7 +230,8 @@
     "url": "https://huggingface.co",
     "visitors": 1677000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "stability",
@@ -230,7 +245,8 @@
     "url": "https://stability.ai",
     "visitors": 1138000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "runwayml",
@@ -244,7 +260,8 @@
     "url": "https://runwayml.com",
     "visitors": 1323000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "character_ai",
@@ -258,7 +275,8 @@
     "url": "https://character.ai",
     "visitors": 129000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "stackoverflow",
@@ -274,7 +292,8 @@
     "position": null,
     "connections": [
       "github"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "codepen",
@@ -288,7 +307,8 @@
     "url": "https://codepen.io",
     "visitors": 815000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "leetcode",
@@ -302,7 +322,8 @@
     "url": "https://leetcode.com",
     "visitors": 1992000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "replit",
@@ -316,7 +337,8 @@
     "url": "https://replit.com",
     "visitors": 247000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "codesandbox",
@@ -330,7 +352,8 @@
     "url": "https://codesandbox.io",
     "visitors": 2198000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "hackerrank",
@@ -344,7 +367,8 @@
     "url": "https://hackerrank.com",
     "visitors": 1454000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "freecodecamp",
@@ -358,7 +382,8 @@
     "url": "https://freecodecamp.org",
     "visitors": 1523000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "w3schools",
@@ -372,7 +397,8 @@
     "url": "https://w3schools.com",
     "visitors": 413000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "devto",
@@ -386,7 +412,8 @@
     "url": "https://dev.to",
     "visitors": 1276000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "github",
@@ -404,7 +431,8 @@
       "google",
       "stackoverflow",
       "npm"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "gitlab",
@@ -418,7 +446,8 @@
     "url": "https://gitlab.com",
     "visitors": 769000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "npm",
@@ -434,7 +463,8 @@
     "position": null,
     "connections": [
       "github"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "bitbucket",
@@ -448,7 +478,8 @@
     "url": "https://bitbucket.org",
     "visitors": 1467000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "postman",
@@ -462,7 +493,8 @@
     "url": "https://postman.com",
     "visitors": 25000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "vercel",
@@ -476,7 +508,8 @@
     "url": "https://vercel.com",
     "visitors": 1687000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "netlify",
@@ -490,7 +523,8 @@
     "url": "https://netlify.com",
     "visitors": 420000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "dockerhub",
@@ -504,7 +538,8 @@
     "url": "https://hub.docker.com",
     "visitors": 1280000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "jira",
@@ -518,7 +553,8 @@
     "url": "https://atlassian.com/software/jira",
     "visitors": 2329000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "aws",
@@ -534,7 +570,8 @@
     "position": null,
     "connections": [
       "amazon"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "azure",
@@ -548,7 +585,8 @@
     "url": "https://azure.microsoft.com",
     "visitors": 2582000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "gcp",
@@ -562,7 +600,8 @@
     "url": "https://cloud.google.com",
     "visitors": 1735000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "digitalocean",
@@ -576,7 +615,8 @@
     "url": "https://digitalocean.com",
     "visitors": 1057000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "cloudflare",
@@ -590,7 +630,8 @@
     "url": "https://cloudflare.com",
     "visitors": 2434000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "heroku",
@@ -604,7 +645,8 @@
     "url": "https://heroku.com",
     "visitors": 47000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "ibm_cloud",
@@ -618,7 +660,8 @@
     "url": "https://ibm.com/cloud",
     "visitors": 1807000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "oracle_cloud",
@@ -632,7 +675,8 @@
     "url": "https://oracle.com/cloud",
     "visitors": 509000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "linode",
@@ -646,7 +690,8 @@
     "url": "https://linode.com",
     "visitors": 353000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "wikipedia",
@@ -662,7 +707,8 @@
     "position": null,
     "connections": [
       "google"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "khanacademy",
@@ -678,7 +724,8 @@
     "position": null,
     "connections": [
       "coursera"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "coursera",
@@ -694,7 +741,8 @@
     "position": null,
     "connections": [
       "khanacademy"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "udemy",
@@ -708,7 +756,8 @@
     "url": "https://udemy.com",
     "visitors": 2154000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "edx",
@@ -722,7 +771,8 @@
     "url": "https://edx.org",
     "visitors": 2175000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "duolingo",
@@ -736,7 +786,8 @@
     "url": "https://duolingo.com",
     "visitors": 1312000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "brilliant",
@@ -750,7 +801,8 @@
     "url": "https://brilliant.org",
     "visitors": 635000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "quizlet",
@@ -764,7 +816,8 @@
     "url": "https://quizlet.com",
     "visitors": 491000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "skillshare",
@@ -778,7 +831,8 @@
     "url": "https://skillshare.com",
     "visitors": 583000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "facebook",
@@ -794,7 +848,8 @@
     "position": null,
     "connections": [
       "instagram"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "instagram",
@@ -810,7 +865,8 @@
     "position": null,
     "connections": [
       "facebook"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "x",
@@ -824,7 +880,8 @@
     "url": "https://x.com",
     "visitors": 1157000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "linkedin",
@@ -838,7 +895,8 @@
     "url": "https://linkedin.com",
     "visitors": 73000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "reddit",
@@ -852,7 +910,8 @@
     "url": "https://reddit.com",
     "visitors": 2875000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "tiktok",
@@ -866,7 +925,8 @@
     "url": "https://tiktok.com",
     "visitors": 1404000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "China"
   },
   {
     "id": "pinterest",
@@ -880,7 +940,8 @@
     "url": "https://pinterest.com",
     "visitors": 1005000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "snapchat",
@@ -894,7 +955,8 @@
     "url": "https://snapchat.com",
     "visitors": 2948000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "discord",
@@ -910,7 +972,8 @@
     "position": null,
     "connections": [
       "twitch"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "paypal",
@@ -926,7 +989,8 @@
     "position": null,
     "connections": [
       "stripe"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "stripe",
@@ -942,7 +1006,8 @@
     "position": null,
     "connections": [
       "paypal"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "coinbase",
@@ -956,7 +1021,8 @@
     "url": "https://coinbase.com",
     "visitors": 1969000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "robinhood",
@@ -970,7 +1036,8 @@
     "url": "https://robinhood.com",
     "visitors": 1684000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "venmo",
@@ -984,7 +1051,8 @@
     "url": "https://venmo.com",
     "visitors": 2517000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "wise",
@@ -998,7 +1066,8 @@
     "url": "https://wise.com",
     "visitors": 2139000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "binance",
@@ -1012,7 +1081,8 @@
     "url": "https://binance.com",
     "visitors": 1625000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "Cayman Islands"
   },
   {
     "id": "chase",
@@ -1026,7 +1096,8 @@
     "url": "https://chase.com",
     "visitors": 2123000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "mint",
@@ -1040,7 +1111,8 @@
     "url": "https://mint.intuit.com",
     "visitors": 771000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "steam",
@@ -1056,7 +1128,8 @@
     "position": null,
     "connections": [
       "twitch"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "twitch",
@@ -1073,7 +1146,8 @@
     "connections": [
       "steam",
       "discord"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "epicgames",
@@ -1087,7 +1161,8 @@
     "url": "https://epicgames.com",
     "visitors": 2626000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "playstation",
@@ -1101,7 +1176,8 @@
     "url": "https://playstation.com",
     "visitors": 601000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "xbox",
@@ -1115,7 +1191,8 @@
     "url": "https://xbox.com",
     "visitors": 238000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "roblox",
@@ -1129,7 +1206,8 @@
     "url": "https://roblox.com",
     "visitors": 2703000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "itchio",
@@ -1143,7 +1221,8 @@
     "url": "https://itch.io",
     "visitors": 1479000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "ign",
@@ -1157,7 +1236,8 @@
     "url": "https://ign.com",
     "visitors": 2793000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "minecraft",
@@ -1171,7 +1251,8 @@
     "url": "https://minecraft.net",
     "visitors": 26000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "Sweden"
   },
   {
     "id": "amazon",
@@ -1187,7 +1268,8 @@
     "position": null,
     "connections": [
       "aws"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "ebay",
@@ -1201,7 +1283,8 @@
     "url": "https://ebay.com",
     "visitors": 878000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "etsy",
@@ -1215,7 +1298,8 @@
     "url": "https://etsy.com",
     "visitors": 2386000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "alibaba",
@@ -1229,7 +1313,8 @@
     "url": "https://alibaba.com",
     "visitors": 2617000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "shopify",
@@ -1243,7 +1328,8 @@
     "url": "https://shopify.com",
     "visitors": 2358000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "Canada"
   },
   {
     "id": "walmart",
@@ -1257,7 +1343,8 @@
     "url": "https://walmart.com",
     "visitors": 1313000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "target",
@@ -1271,7 +1358,8 @@
     "url": "https://target.com",
     "visitors": 1760000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "wish",
@@ -1285,7 +1373,8 @@
     "url": "https://wish.com",
     "visitors": 2166000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "aliexpress",
@@ -1299,7 +1388,8 @@
     "url": "https://aliexpress.com",
     "visitors": 409000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "China"
   },
   {
     "id": "netflix",
@@ -1315,7 +1405,8 @@
     "position": null,
     "connections": [
       "youtube"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "youtube",
@@ -1331,7 +1422,8 @@
     "position": null,
     "connections": [
       "netflix"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "spotify",
@@ -1347,7 +1439,8 @@
     "position": null,
     "connections": [
       "soundcloud"
-    ]
+    ],
+    "country": "Sweden"
   },
   {
     "id": "disneyplus",
@@ -1361,7 +1454,8 @@
     "url": "https://disneyplus.com",
     "visitors": 1047000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "hulu",
@@ -1375,7 +1469,8 @@
     "url": "https://hulu.com",
     "visitors": 2705000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "primevideo",
@@ -1389,7 +1484,8 @@
     "url": "https://primevideo.com",
     "visitors": 891000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "soundcloud",
@@ -1405,7 +1501,8 @@
     "position": null,
     "connections": [
       "spotify"
-    ]
+    ],
+    "country": "Germany"
   },
   {
     "id": "hbomax",
@@ -1419,7 +1516,8 @@
     "url": "https://max.com",
     "visitors": 848000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "imdb",
@@ -1433,7 +1531,8 @@
     "url": "https://imdb.com",
     "visitors": 2331000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "bbc",
@@ -1449,7 +1548,8 @@
     "position": null,
     "connections": [
       "nytimes"
-    ]
+    ],
+    "country": "United Kingdom"
   },
   {
     "id": "cnn",
@@ -1463,7 +1563,8 @@
     "url": "https://cnn.com",
     "visitors": 2049000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "nytimes",
@@ -1479,7 +1580,8 @@
     "position": null,
     "connections": [
       "bbc"
-    ]
+    ],
+    "country": "United States"
   },
   {
     "id": "reuters",
@@ -1493,7 +1595,8 @@
     "url": "https://reuters.com",
     "visitors": 1569000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United Kingdom"
   },
   {
     "id": "theguardian",
@@ -1507,7 +1610,8 @@
     "url": "https://theguardian.com",
     "visitors": 1949000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United Kingdom"
   },
   {
     "id": "aljazeera",
@@ -1521,7 +1625,8 @@
     "url": "https://aljazeera.com",
     "visitors": 2847000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "apnews",
@@ -1535,7 +1640,8 @@
     "url": "https://apnews.com",
     "visitors": 2129000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "bloomberg",
@@ -1549,7 +1655,8 @@
     "url": "https://bloomberg.com",
     "visitors": 2583000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   },
   {
     "id": "npr",
@@ -1563,6 +1670,7 @@
     "url": "https://npr.org",
     "visitors": 2241000000,
     "position": null,
-    "connections": []
+    "connections": [],
+    "country": "United States"
   }
 ]
