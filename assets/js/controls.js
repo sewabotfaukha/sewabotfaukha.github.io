@@ -8,7 +8,7 @@
 export function createCameraRig(camera) {
   const baseZ = camera.position.z;
   const mouse = { x: 0, y: 0 };
-  const state = { tiltX: 0, tiltY: 0, impulseZ: 0 };
+  const state = { tiltX: 0, tiltY: 0, impulseZ: 0, scrollY: 0 };
 
   function onPointerMove(e) {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -26,7 +26,7 @@ export function createCameraRig(camera) {
     state.tiltY += (-mouse.y * 0.16 - state.tiltY) * 0.03;
 
     camera.position.x = idleX + state.tiltX;
-    camera.position.y = idleY + state.tiltY + 0.15;
+    camera.position.y = idleY + state.tiltY + 0.15 + state.scrollY;
     camera.position.z = baseZ + state.impulseZ;
     camera.lookAt(0, 0, 0);
   }

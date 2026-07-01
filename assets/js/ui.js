@@ -1,7 +1,7 @@
 // ============================================================================
 // NEXUS — ui.js
 // Interaksi non-3D: loading screen, tombol premium (glow-follow + ripple),
-// label koordinat navbar. Semua akses DOM lewat safeQuery() (null-safe).
+// cursor glow, label koordinat navbar. Semua akses DOM lewat safeQuery().
 // ============================================================================
 
 function safeQuery(selector) {
@@ -16,18 +16,14 @@ export function hideLoader(delay = 400) {
   window.setTimeout(() => loader.classList.add('is-hidden'), delay);
 }
 
-/** Glow tombol mengikuti posisi kursor (CSS var --mx/--my dikonsumsi di animation.css). */
 function bindButtonGlowFollow(button) {
   button.addEventListener('pointermove', (e) => {
     const rect = button.getBoundingClientRect();
-    const mx = ((e.clientX - rect.left) / rect.width) * 100;
-    const my = ((e.clientY - rect.top) / rect.height) * 100;
-    button.style.setProperty('--mx', `${mx}%`);
-    button.style.setProperty('--my', `${my}%`);
+    button.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`);
+    button.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`);
   });
 }
 
-/** Ripple effect saat klik — elemen span dibuang otomatis setelah animasi selesai. */
 function bindButtonRipple(button) {
   button.addEventListener('click', (e) => {
     const rect = button.getBoundingClientRect();
@@ -40,18 +36,31 @@ function bindButtonRipple(button) {
   });
 }
 
-/** Tombol Explore: efek premium + broadcast event untuk fly-bump kamera (ditangani main.js). */
-export function bindExploreButton() {
-  const button = safeQuery('[data-action="explore"]');
-  if (!button) return;
-
-  bindButtonGlowFollow(button);
-  bindButtonRipple(button);
-
-  button.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('nexus:explore'));
-    // Section tujuan belum ada pada tahap ini (fokus hero-only).
+/** Mengikat efek premium (glow-follow + ripple) ke SEMUA tombol .btn di halaman. */
+export function bindButtons() {
+  document.querySelectorAll('.btn').forEach((btn) => {
+    bindButtonGlowFollow(btn);
+    bindButtonRipple(btn);
   });
+
+  const explore = document.querySelector('[data-action="explore"]');
+  if (explore) {
+    explore.addEventListener('click', () => window.dispatchEvent(new CustomEvent('nexus:explore')));
+  }
+
+  const downloadCv = document.querySelector('[data-action="download-cv"]');
+  if (downloadCv) {
+    downloadCv.addEventListener('click', () =>
+      console.info('[NEXUS] Download CV — file belum tersedia pada tahap ini.')
+    );
+  }
+
+  const viewProjects = document.querySelector('[data-action="view-projects"]');
+  if (viewProjects) {
+    viewProjects.addEventListener('click', () =>
+      console.info('[NEXUS] View Projects — section Projects belum dibuat pada tahap ini.')
+    );
+  }
 }
 
 export function bindCoordinateLabel() {
@@ -66,8 +75,18 @@ export function bindCoordinateLabel() {
   });
 }
 
+/** Titik cahaya lembut yang mengikuti kursor (dekorasi, memakai transform agar ringan). */
+export function bindCursorGlow() {
+  const glow = safeQuery('.cursor-glow');
+  if (!glow) return;
+
+  window.addEventListener('pointermove', (e) => {
+    glow.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+  });
+}
+
 export function initUI() {
-  [bindExploreButton, bindCoordinateLabel].forEach((bind) => {
+  [bindButtons, bindCoordinateLabel, bindCursorGlow].forEach((bind) => {
     try {
       bind();
     } catch (err) {

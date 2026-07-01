@@ -18,6 +18,29 @@
     width: min(85vw, 560px);
     height: min(85vw, 560px);
   }
+
+  .about__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    text-align: center;
+  }
+
+  .about__content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .about__buttons {
+    justify-content: center;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .cursor-glow {
+    display: none; /* efek dekoratif halus dimatikan di layar sentuh/tablet demi performa */
+  }
 }
 
 /* ---------- Mobile ---------- */
@@ -55,6 +78,36 @@
   .btn {
     width: 100%;
     justify-content: center;
+  }
+
+  .about {
+    padding: var(--space-xl) var(--space-md);
+  }
+
+  .about__title {
+    font-size: clamp(1.9rem, 8vw, 2.4rem);
+  }
+
+  .about__buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .about__buttons .btn {
+    width: 100%;
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-xs);
+  }
+
+  .stat-card {
+    padding: var(--space-sm);
+  }
+
+  .about__blob {
+    display: none; /* jaga performa di layar kecil */
   }
 }
 

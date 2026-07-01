@@ -1,10 +1,13 @@
 // ============================================================================
 // NEXUS — animation.js
-// Konfigurasi GSAP + intro timeline + micro-interactions bertenaga GSAP
-// (card parallax, camera fly-bump saat klik Explore).
+// GSAP core + ScrollTrigger + Lenis smooth scroll + micro-interactions.
 // ============================================================================
 
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import Lenis from 'lenis';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export function configureGsapDefaults() {
   gsap.defaults({ ease: 'power3.out', duration: 0.8 });
@@ -20,9 +23,55 @@ export function playIntroTimeline() {
   return tl;
 }
 
+/** Smooth scroll "berat tapi halus" — Lenis disinkronkan ke gsap.ticker (bukan rAF baru). */
+export function initSmoothScroll() {
+  const lenis = new Lenis({
+    duration: 1.15,
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+  });
+
+  lenis.on('scroll', ScrollTrigger.update);
+
+  gsap.ticker.add((time) => lenis.raf(time * 1000));
+  gsap.ticker.lagSmoothing(0);
+
+  return lenis;
+}
+
+/** Progress 0→1 dari mulai masuk viewport #about — dipakai untuk transisi cinematic Hero→About. */
+export function initSectionTransition(onProgress) {
+  const about = document.querySelector('#about');
+  if (!about) return null;
+
+  return ScrollTrigger.create({
+    trigger: about,
+    start: 'top bottom',
+    end: 'top top',
+    scrub: 1.2,
+    onUpdate: (self) => onProgress(self.progress),
+  });
+}
+
+/** Reveal bertahap section About: opacity + translate + blur, stagger. */
+export function initAboutReveal() {
+  const about = document.querySelector('#about');
+  if (!about) return;
+
+  const leftEls = about.querySelectorAll(
+    '.about__eyebrow, .about__title, .about__name, .about__role, .about__desc, .about__buttons .btn'
+  );
+  const statEls = about.querySelectorAll('.stat-card');
+
+  gsap
+    .timeline({ scrollTrigger: { trigger: about, start: 'top 70%', once: true } })
+    .from(leftEls, { opacity: 0, y: 32, filter: 'blur(10px)', duration: 1, stagger: 0.12, ease: 'power3.out' })
+    .from('.about__card', { opacity: 0, y: 40, filter: 'blur(14px)', duration: 1.2, ease: 'power3.out' }, '-=0.7')
+    .from(statEls, { opacity: 0, y: 24, duration: 0.8, stagger: 0.1, ease: 'power3.out' }, '-=0.6');
+}
+
 /**
- * Parallax lembut pada kartu hero mengikuti posisi mouse (rotateX/rotateY).
- * Pakai gsap.quickTo agar sangat murah dipanggil tiap pointermove (tween di-reuse).
+ * Parallax lembut pada kartu hero mengikuti posisi mouse (seluruh viewport).
  */
 export function initCardParallax() {
   const panel = document.querySelector('.hero__panel');
@@ -30,13 +79,12 @@ export function initCardParallax() {
 
   const toRotX = gsap.quickTo(panel, 'rotationX', { duration: 0.6, ease: 'power3' });
   const toRotY = gsap.quickTo(panel, 'rotationY', { duration: 0.6, ease: 'power3' });
-
   gsap.set(panel, { transformPerspective: 900, transformOrigin: 'center' });
 
   window.addEventListener('pointermove', (e) => {
     const nx = (e.clientX / window.innerWidth) * 2 - 1;
     const ny = (e.clientY / window.innerHeight) * 2 - 1;
-    toRotX(ny * -4); // derajat, sangat kecil agar tetap premium bukan norak
+    toRotX(ny * -4);
     toRotY(nx * 5);
   });
 
@@ -47,25 +95,53 @@ export function initCardParallax() {
 }
 
 /**
- * Fly-bump kamera kecil saat tombol Explore diklik — bukan pindah section,
- * hanya sentuhan cinematic push-in lalu kembali.
+ * Tilt card lokal (hover-bound) untuk kartu interaktif About — bereaksi
+ * hanya saat kursor berada di atas kartu itu sendiri.
+ * @param {string} selector
+ */
+export function initTiltCard(selector) {
+  const card = document.querySelector(selector);
+  if (!card) return;
+
+  const toRotX = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power3' });
+  const toRotY = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power3' });
+  const toY = gsap.quickTo(card, 'y', { duration: 0.5, ease: 'power3' });
+  gsap.set(card, { transformPerspective: 800, transformOrigin: 'center' });
+
+  card.addEventListener('pointermove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+    toRotX(ny * -6);
+    toRotY(nx * 7);
+  });
+
+  card.addEventListener('pointerenter', () => toY(-6));
+  card.addEventListener('pointerleave', () => {
+    toRotX(0);
+    toRotY(0);
+    toY(0);
+  });
+}
+
+/**
+ * Fly-bump kamera kecil saat tombol Explore diklik.
  * @param {THREE.PerspectiveCamera} camera
- * @param {{impulseZ:number}} rigState - state dari createCameraRig (controls.js)
+ * @param {{impulseZ:number}} rigState
  */
 export function cameraFlyBump(camera, rigState) {
-  gsap.timeline()
+  gsap
+    .timeline()
     .to(rigState, { impulseZ: -0.7, duration: 0.35, ease: 'power2.out' })
     .to(rigState, { impulseZ: 0, duration: 0.6, ease: 'power3.inOut' })
-    .to(camera, {
-      fov: camera.fov - 4,
-      duration: 0.35,
-      ease: 'power2.out',
-      onUpdate: () => camera.updateProjectionMatrix(),
-    }, 0)
-    .to(camera, {
-      fov: camera.fov,
-      duration: 0.6,
-      ease: 'power3.inOut',
-      onUpdate: () => camera.updateProjectionMatrix(),
-    }, 0.35);
+    .to(
+      camera,
+      { fov: camera.fov - 4, duration: 0.35, ease: 'power2.out', onUpdate: () => camera.updateProjectionMatrix() },
+      0
+    )
+    .to(
+      camera,
+      { fov: camera.fov, duration: 0.6, ease: 'power3.inOut', onUpdate: () => camera.updateProjectionMatrix() },
+      0.35
+    );
 }

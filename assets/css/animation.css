@@ -34,6 +34,12 @@
   animation: nexus-bounce 2.2s var(--ease-soft) infinite;
 }
 
+/* ---------- Floating blur blob (background About) ---------- */
+@keyframes nexus-float-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -24px) scale(1.08); }
+}
+
 /* ---------- Ripple effect tombol (elemen dibuat dinamis via ui.js) ---------- */
 @keyframes nexus-ripple {
   from {
