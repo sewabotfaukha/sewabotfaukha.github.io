@@ -1,111 +1,70 @@
 /* ==========================================================================
-   RESPONSIVE — Breakpoint adjustments
+   NEXUS — Responsive
+   Breakpoint: Desktop (default) → Tablet (≤1024px) → Mobile (≤600px)
    ========================================================================== */
 
-/* ---- Tablet ---- */
+/* ---------- Tablet ---------- */
 @media (max-width: 1024px) {
-  #hero-title {
-    font-size: clamp(2.8rem, 11vw, 6.5rem);
-  }
-
-  #sidebar {
-    width: min(340px, 88vw);
-  }
-
-  #minimap {
-    width: 130px;
-    height: 130px;
-  }
-}
-
-/* ---- Mobile ---- */
-@media (max-width: 640px) {
-  #hero-content {
-    gap: var(--space-sm);
-    padding: var(--space-md);
-  }
-
-  #hero-kicker {
-    letter-spacing: 0.22em;
-    font-size: 10px;
-  }
-
-  #hero-title {
-    font-size: clamp(2.6rem, 16vw, 4.5rem);
-  }
-
-  #hero-subtitle {
-    font-size: 0.85rem;
-    padding: 0 var(--space-sm);
-  }
-
-  #hero-cta {
-    margin-top: var(--space-lg);
-    padding: 14px 36px;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-  }
-
-  #hero-scroll-hint {
-    bottom: var(--space-lg);
-  }
-
-  #topbar {
-    flex-wrap: wrap;
-    gap: var(--space-sm);
+  .nexus-nav {
     padding: var(--space-sm) var(--space-md);
   }
 
-  #brand-name {
-    font-size: var(--fs-sm);
+  .hero__panel {
+    max-width: 560px;
+    padding: var(--space-xl) var(--space-md);
   }
 
-  #search-container {
-    order: 3;
+  .hero__ring {
+    width: min(85vw, 560px);
+    height: min(85vw, 560px);
+  }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 600px) {
+  .nexus-nav {
+    padding: var(--space-sm);
+  }
+
+  .nexus-nav__coords {
+    display: none; /* sembunyikan koordinat dekoratif di layar sempit */
+  }
+
+  .hero {
+    padding: var(--space-md);
+  }
+
+  .hero__panel {
+    padding: var(--space-lg) var(--space-md);
+    gap: var(--space-sm);
+    border-radius: var(--radius-md);
+  }
+
+  .hero__title {
+    font-size: clamp(2.75rem, 16vw, 4rem);
+  }
+
+  .hero__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .hero__scroll-hint {
+    bottom: var(--space-md);
+  }
+
+  .btn {
     width: 100%;
-    max-width: none;
+    justify-content: center;
+  }
+}
+
+/* ---------- Layar sangat kecil ---------- */
+@media (max-width: 360px) {
+  .hero__title {
+    font-size: 2.25rem;
   }
 
-  /* Sidebar mobile (bottom sheet) — shape handled in layout.css */
-  .sidebar-logo-premium {
-    width: 50px;
-    height: 50px;
-  }
-
-  .sidebar-title-premium {
-    font-size: var(--fs-md);
-  }
-
-  /* Legacy galaxy swatch */
-  .sidebar-logo,
-  .sidebar-galaxy-swatch {
-    width: 44px;
-    height: 44px;
-  }
-
-  .sidebar-title {
-    font-size: var(--fs-md);
-  }
-
-  #planet-tooltip {
-    display: none; /* hover tooltips don't apply on touch devices */
-  }
-
-  #minimap {
-    width: 96px;
-    height: 96px;
-    bottom: var(--space-md);
-    right: var(--space-md);
-  }
-
-  #hud {
-    font-size: 10px;
-    bottom: var(--space-md);
-    left: var(--space-md);
-  }
-
-  #loading-title {
-    font-size: var(--fs-lg);
-    letter-spacing: 0.15em;
+  .hero__panel {
+    padding: var(--space-md) var(--space-sm);
   }
 }

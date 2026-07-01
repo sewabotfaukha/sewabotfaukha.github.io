@@ -1,103 +1,89 @@
-# Internet Map
+# NEXUS — Interactive 3D Developer Portfolio
 
-Internet Map is a premium web experience that visualizes the internet as a 3D universe — every website a celestial body, every link a connection in space.
+Portfolio premium berbasis **Three.js** dan **GSAP**, dibangun murni dengan
+HTML5, CSS3, dan JavaScript ES Modules — tanpa backend, tanpa framework,
+tanpa Node.js, dan tanpa build tools. Siap dijalankan langsung dari
+**GitHub Pages**.
 
-This repository currently contains **Phase 1: the project foundation**. No planets, no large-scale visualization features yet — just a clean, professional, working base to build on.
+## Status
 
-## Tech Stack
+Ini adalah **fondasi project (Prompt 1)**: landing page premium dengan
+setup Three.js dasar (scene, camera, renderer, OrbitControls) dan
+konfigurasi GSAP awal. Belum ada object 3D atau animasi besar — struktur
+ini dirancang agar mudah dikembangkan pada prompt-prompt berikutnya.
 
-- HTML5
-- CSS3 (with CSS variables, dark theme)
-- JavaScript ES6 Modules (native `import`/`export`, no bundler)
-- [Three.js](https://threejs.org/) — via CDN / import map
-- [GSAP](https://gsap.com/) — via CDN / import map
+## Struktur Project
 
-No Node.js, no build tools, no frameworks (React/Vue/Angular), no backend. The site runs by opening `index.html` directly, or via any static file host.
+```
+NexusPortfolio/
+├── index.html                 # Entry point HTML + import map (Three.js & GSAP via CDN)
+├── assets/
+│   ├── css/
+│   │   ├── style.css          # Entry point CSS (mengimpor modul di bawah)
+│   │   ├── variables.css      # Design tokens: warna, tipografi, spacing, easing
+│   │   ├── layout.css         # Struktur layout: hero, glass panel, nav
+│   │   ├── animation.css      # Keyframes & transisi CSS ringan
+│   │   └── responsive.css     # Breakpoint desktop / tablet / mobile
+│   ├── js/
+│   │   ├── main.js            # Entry point JS — merangkai semua modul
+│   │   ├── scene.js           # Setup THREE.Scene
+│   │   ├── camera.js          # Setup PerspectiveCamera + handler resize
+│   │   ├── controls.js        # Setup OrbitControls
+│   │   ├── loader.js          # LoadingManager & loader dasar (siap dipakai)
+│   │   ├── animation.js       # Konfigurasi & timeline dasar GSAP
+│   │   ├── ui.js               # Interaksi UI non-3D (loader, tombol, dsb)
+│   │   └── effects.js         # Placeholder efek visual tambahan
+│   ├── textures/              # Aset tekstur (kosong — untuk prompt berikutnya)
+│   ├── models/                # Model 3D .glb/.gltf (kosong — untuk prompt berikutnya)
+│   ├── images/                # Gambar statis (kosong — untuk prompt berikutnya)
+│   └── fonts/                 # Font lokal opsional (saat ini pakai Google Fonts CDN)
+├── README.md
+└── LICENSE
+```
 
-## How to Run
+## Teknologi
 
-### Option A — Open directly
-Because this project uses native ES modules and `fetch()` for JSON data, most browsers require it to be served over `http://` (not `file://`). Use any simple static server:
+| Teknologi     | Keterangan                                      |
+|---------------|--------------------------------------------------|
+| HTML5 / CSS3  | Struktur & styling murni, tanpa preprocessor     |
+| JavaScript ES Modules | Tanpa bundler — dimuat langsung via `<script type="module">` |
+| Three.js `0.160.0` | Scene, camera, renderer, OrbitControls, dimuat via CDN (`jsdelivr`) melalui import map |
+| GSAP `3.12.5` | Orkestrasi animasi, dimuat via CDN melalui import map |
+
+Tidak ada proses build. Semua dependency diambil langsung dari CDN lewat
+`<script type="importmap">` di `index.html`, sehingga project bisa langsung
+dibuka di browser atau di-deploy ke GitHub Pages tanpa langkah kompilasi.
+
+## Menjalankan Secara Lokal
+
+Karena project menggunakan ES Modules, buka file `index.html` **melalui
+local server**, bukan langsung dari `file://` (browser modern memblokir
+`import` pada protokol file). Contoh:
 
 ```bash
-# Python 3
+# Opsi 1: Python
 python3 -m http.server 8000
 
-# Node (npx, no install needed)
-npx serve .
+# Opsi 2: VS Code Live Server extension
 ```
 
-Then open `http://localhost:8000` in your browser.
+Lalu buka `http://localhost:8000` di browser.
 
-### Option B — VS Code Live Server
-Install the "Live Server" extension and click "Go Live" from `index.html`.
+## Deploy ke GitHub Pages
 
-## Deploying to GitHub Pages
+1. Push seluruh isi folder `NexusPortfolio/` ke branch `main` (atau `gh-pages`).
+2. Buka **Settings → Pages** pada repository.
+3. Pilih branch & folder root (`/`), lalu simpan.
+4. Situs akan tersedia di `https://<username>.github.io/<nama-repo>/`.
 
-1. Push this repository to GitHub.
-2. Go to **Settings → Pages**.
-3. Under "Build and deployment", set **Source** to `Deploy from a branch`.
-4. Choose your branch (e.g. `main`) and root folder `/`.
-5. Save. GitHub will publish the site at `https://<username>.github.io/<repo-name>/`.
+## Roadmap (Prompt Berikutnya)
 
-No build step is required — GitHub Pages serves the static files as-is.
+- Menambahkan object 3D utama (signature element) ke dalam `scene.js`.
+- Mengisi `loader.js` dengan `GLTFLoader` untuk model di `assets/models/`.
+- Menambahkan section portfolio, about, dan contact.
+- Mengaktifkan `effects.js` (post-processing / partikel ambient).
+- Menambahkan scroll-triggered animation dengan GSAP `ScrollTrigger`.
 
-## Project Structure
+## Lisensi
 
-```
-InternetMap/
-├── index.html              # Entry point — loading screen, canvas, UI shell
-├── README.md
-├── LICENSE
-└── assets/
-    ├── css/
-    │   ├── variables.css    # Design tokens (colors, spacing, typography)
-    │   ├── style.css        # Reset + base element styles
-    │   ├── layout.css       # Structural positioning of major regions
-    │   ├── glass.css        # Glassmorphism panel styling
-    │   ├── animation.css    # Keyframes & transition utilities
-    │   └── responsive.css   # Breakpoint adjustments
-    ├── js/
-    │   ├── main.js          # Entry point — wires all modules together
-    │   ├── scene.js         # Three.js Scene construction
-    │   ├── camera.js        # Perspective camera setup
-    │   ├── renderer.js      # WebGLRenderer setup
-    │   ├── controls.js      # OrbitControls wrapper
-    │   ├── loader.js        # Loading screen + data preloading
-    │   ├── ui.js            # Search / sidebar / audio toggle / HUD wiring
-    │   └── utils.js         # Shared helper functions
-    ├── data/
-    │   ├── websites.json    # Sample website node data
-    │   └── connections.json # Sample link data between websites
-    ├── textures/            # (reserved for future 3D textures)
-    ├── logos/               # (reserved for future website logo sprites)
-    ├── audio/               # (reserved for future ambient audio)
-    └── images/              # (reserved for future UI/marketing images)
-```
-
-## Module Flow
-
-```
-main.js
-  ├─ loader.js     → loads websites.json / connections.json, drives loading bar
-  ├─ scene.js      → creates THREE.Scene + base lighting
-  ├─ camera.js     → creates THREE.PerspectiveCamera
-  ├─ renderer.js   → creates THREE.WebGLRenderer bound to #scene-canvas
-  ├─ controls.js   → creates OrbitControls bound to camera + renderer
-  └─ ui.js         → wires search input, sidebar close, audio toggle, HUD
-```
-
-All modules communicate exclusively through ES module imports/exports — no globals, no inline scripts.
-
-## What's Next (Future Phases)
-
-- Rendering website nodes as 3D "planets" using `data/websites.json`
-- Rendering connection lines using `data/connections.json`
-- Real search + sidebar detail population
-- Minimap camera projection
-- Ambient audio playback
-- Texture/logo loading for individual nodes
-
-## License
-
-See [LICENSE](./LICENSE).
+Lihat file [LICENSE](./LICENSE).

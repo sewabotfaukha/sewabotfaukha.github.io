@@ -1,54 +1,63 @@
 /* ==========================================================================
-   ANIMATION — Keyframes & lightweight transition utilities
-   (Foundation only — kept intentionally minimal for Phase 1)
+   NEXUS — CSS Animation
+   Keyframes & transisi ringan yang tidak perlu dikendalikan lewat GSAP.
+   Animasi utama/orkestrasi tetap dikerjakan lewat GSAP (lihat animation.js).
    ========================================================================== */
 
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ---------- Denyut lembut pada indikator eyebrow ---------- */
+@keyframes nexus-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
-@keyframes fade-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
+.hero__eyebrow::before {
+  animation: nexus-pulse 2.4s var(--ease-soft) infinite;
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 var(--color-accent-glow); }
-  50% { box-shadow: 0 0 18px var(--color-accent-glow); }
+/* ---------- Rotasi lambat cincin dekoratif hero ---------- */
+@keyframes nexus-spin-slow {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
-/* ---- Phase 9: search empty-state icon pulse ---- */
-@keyframes search-empty-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.12); opacity: 0.9; }
+.hero__ring {
+  animation: nexus-spin-slow 60s linear infinite;
 }
 
-/* ---- Utility classes (toggled by JS) ---- */
-.is-hidden {
-  display: none !important;
+/* ---------- Gerak naik-turun indikator scroll ---------- */
+@keyframes nexus-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
+  50%      { transform: translateX(-50%) translateY(8px); opacity: 1; }
 }
 
-.is-fading-in {
-  animation: fade-in var(--duration-base) var(--ease-default) forwards;
+.hero__scroll-hint {
+  animation: nexus-bounce 2.2s var(--ease-soft) infinite;
 }
 
-.is-fading-out {
-  animation: fade-out var(--duration-base) var(--ease-default) forwards;
+/* ---------- Transisi hover umum untuk elemen interaktif ---------- */
+a, button, .btn {
+  transition: transform var(--dur-fast) var(--ease-soft),
+              opacity var(--dur-fast) var(--ease-soft),
+              box-shadow var(--dur-fast) var(--ease-soft);
 }
 
-/* ---- Transition defaults for interactive elements ---- */
-#audio-toggle,
-#sidebar-close,
-#search-input {
-  transition: background-color var(--duration-fast) var(--ease-default),
-              box-shadow var(--duration-fast) var(--ease-default);
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px var(--accent-violet-soft);
 }
 
-/* Note: #sidebar's slide/fade transition is now driven entirely by GSAP
-   (see ui.js's openSidebar/closeSidebar) — no CSS transition here, since a
-   CSS transition on the same `transform` property GSAP animates would
-   double up and introduce lag. */
-#sidebar[hidden] {
-  display: none;
+.btn:active {
+  transform: translateY(0);
+}
+
+/* ---------- Hormati preferensi reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,69 +1,48 @@
-// ==========================================================================
-// loader.js — Loading screen orchestration & data preloading
-// ==========================================================================
+// ============================================================================
+// NEXUS — loader.js
+// Menyiapkan LoadingManager & loader dasar Three.js.
+// Belum memuat aset apa pun — hanya pondasi agar prompt berikutnya
+// (model 3D, tekstur, dsb.) tinggal plug-in tanpa refactor besar.
+// ============================================================================
 
-import { $, loadJSON, sleep } from "./utils.js";
+import * as THREE from 'three';
 
 /**
- * Drives the loading screen progress bar while data is fetched.
- * Returns the loaded data so main.js can pass it along to other modules.
+ * Membuat THREE.LoadingManager terpusat beserta callback progress dasar.
+ * Callback bisa dihubungkan ke UI loading screen di ui.js.
+ * @param {Object} callbacks - { onProgress, onLoad, onError }
+ * @returns {THREE.LoadingManager}
  */
-export async function runLoadingSequence() {
-  const fill = $("loading-bar-fill");
-  const status = $("loading-status");
+export function createLoadingManager({ onProgress, onLoad, onError } = {}) {
+  const manager = new THREE.LoadingManager();
 
-  const steps = [
-    { label: "Loading websites data...", weight: 40 },
-    { label: "Loading connections data...", weight: 40 },
-    { label: "Preparing universe...", weight: 20 },
-  ];
-
-  let progress = 0;
-  const setProgress = (value) => {
-    progress = value;
-    if (fill) fill.style.width = `${progress}%`;
+  manager.onProgress = (url, itemsLoaded, itemsTotal) => {
+    if (onProgress) onProgress(itemsLoaded / itemsTotal);
   };
 
-  let websites = [];
-  let connections = [];
+  manager.onLoad = () => {
+    if (onLoad) onLoad();
+  };
 
-  try {
-    status.textContent = steps[0].label;
-    websites = await loadJSON("assets/data/websites.json");
-    setProgress(progress + steps[0].weight);
+  manager.onError = (url) => {
+    console.warn(`[NEXUS] Gagal memuat aset: ${url}`);
+    if (onError) onError(url);
+  };
 
-    status.textContent = steps[1].label;
-    connections = await loadJSON("assets/data/connections.json");
-    setProgress(progress + steps[1].weight);
-
-    status.textContent = steps[2].label;
-    await sleep(250); // brief pause for perceived smoothness
-    setProgress(100);
-  } catch (err) {
-    console.error("[loader] Failed to load data:", err);
-    status.textContent = "Failed to load data. Check console for details.";
-    throw err;
-  }
-
-  return { websites, connections };
+  return manager;
 }
 
-/** Fade out the loading screen, revealing the premium hero landing page */
-export function hideLoadingScreen() {
-  const loadingScreen = $("loading-screen");
-  const hero = $("hero-landing");
-
-  if (loadingScreen) {
-    loadingScreen.classList.add("is-fading-out");
-    loadingScreen.addEventListener(
-      "animationend",
-      () => loadingScreen.classList.add("is-hidden"),
-      { once: true }
-    );
-  }
-
-  // Hand off to hero.js, which owns the GSAP intro timeline for #hero-landing
-  if (hero) {
-    hero.dispatchEvent(new CustomEvent("loading-complete"));
-  }
+/**
+ * Membuat THREE.TextureLoader yang terhubung ke LoadingManager tertentu.
+ * Siap dipakai ketika folder assets/textures mulai diisi.
+ * @param {THREE.LoadingManager} manager
+ * @returns {THREE.TextureLoader}
+ */
+export function createTextureLoader(manager) {
+  return new THREE.TextureLoader(manager);
 }
+
+// Catatan pengembangan (Prompt berikutnya):
+// - Tambahkan GLTFLoader dari 'three/addons/loaders/GLTFLoader.js' saat
+//   model 3D di assets/models/ mulai digunakan.
+// - Tambahkan DRACOLoader bila model GLTF terkompresi Draco.

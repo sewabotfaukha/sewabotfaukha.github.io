@@ -1,40 +1,36 @@
-// ==========================================================================
-// controls.js — Camera controls (OrbitControls) for navigating the universe
-// Supports rotate, pan, zoom, damping and inertia out of the box via
-// Three.js's OrbitControls — configured explicitly below for clarity.
-// ==========================================================================
+// ============================================================================
+// NEXUS — controls.js
+// Bertanggung jawab untuk membuat & mengonfigurasi OrbitControls.
+// ============================================================================
 
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+/**
+ * Membuat instance OrbitControls yang terikat pada kamera & elemen DOM renderer.
+ * @param {THREE.Camera} camera
+ * @param {HTMLElement} domElement - biasanya renderer.domElement
+ * @returns {OrbitControls}
+ */
 export function createControls(camera, domElement) {
   const controls = new OrbitControls(camera, domElement);
 
-  // ---- Damping / inertia ----
-  // enableDamping + a non-zero dampingFactor gives the camera "inertia":
-  // motion eases out smoothly after the user releases the mouse, instead
-  // of stopping instantly. controls.update() must be called every frame
-  // (done in main.js's animation loop) for damping to take effect.
+  // Damping membuat pergerakan kamera terasa halus & premium.
   controls.enableDamping = true;
-  controls.dampingFactor = 0.06;
+  controls.dampingFactor = 0.05;
 
-  // ---- Rotate ----
-  controls.enableRotate = true;
-  controls.rotateSpeed = 0.4;
+  // Batasi zoom & pan agar pengalaman tetap terarah (tidak "tersesat" di scene kosong).
+  controls.enablePan = false;
+  controls.minDistance = 3;
+  controls.maxDistance = 12;
 
-  // ---- Zoom ----
-  controls.enableZoom = true;
-  controls.zoomSpeed = 0.6;
-  controls.minDistance = 5;
-  controls.maxDistance = 5000;
+  // Batasi rotasi vertikal agar kamera tidak terbalik.
+  controls.minPolarAngle = Math.PI / 4;
+  controls.maxPolarAngle = Math.PI - Math.PI / 4;
 
-  // ---- Pan ----
-  controls.enablePan = true;
-  controls.panSpeed = 0.4;
-  controls.screenSpacePanning = true; // pan parallel to the screen plane
-
-  // Keep the orbit target at the scene origin for now (the future "core"
-  // of the internet universe); this can be retargeted once nodes exist.
-  controls.target.set(0, 0, 0);
+  // Auto-rotate lembut sebagai sentuhan "hidup" pada scene kosong —
+  // akan terasa lebih bermakna begitu object 3D ditambahkan nanti.
+  controls.autoRotate = true;
+  controls.autoRotateSpeed = 0.4;
 
   return controls;
 }
