@@ -7,7 +7,7 @@
 
 import * as THREE from 'three';
 
-import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting } from './scene.js';
+import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js';
 import { createCamera, updateCameraOnResize } from './camera.js';
 import { createCameraRig } from './controls.js';
 import { createLoadingManager } from './loader.js';
@@ -19,6 +19,7 @@ import {
   initAboutReveal,
   initSmoothScroll,
   initSectionTransition,
+  initHeroScrollTransition,
   cameraFlyBump,
 } from './animation.js';
 import { initUI, hideLoader } from './ui.js';
@@ -57,8 +58,10 @@ function bootstrap() {
 
   const stars = createStarfield(isMobile ? 160 : 380);
   const particles = createAmbientParticles(isMobile ? 20 : 50);
-  const nebula = createNebulaBackdrop();
-  scene.add(nebula, stars, particles);
+  const nebula = createNebulaBackdrop(isMobile);
+  const softShadow = createSoftShadow();
+  scene.add(nebula, stars, particles, softShadow);
+  applyEnvironmentReflection(renderer, scene);
 
   createLoadingManager({ onLoad: () => hideLoader() });
   hideLoader(300);
@@ -140,6 +143,7 @@ function safeInitNonThreeParts() {
   try { playIntroTimeline(); } catch (err) { console.error('[NEXUS] Intro timeline gagal:', err); }
   try { initCardParallax(); } catch (err) { console.error('[NEXUS] Card parallax gagal:', err); }
   try { initTiltCard('.about__card'); } catch (err) { console.error('[NEXUS] Tilt card gagal:', err); }
+  try { initHeroScrollTransition(); } catch (err) { console.error('[NEXUS] Hero scroll transition gagal:', err); }
   try { initAboutReveal(); } catch (err) { console.error('[NEXUS] About reveal gagal:', err); }
   hideLoader(800);
 }

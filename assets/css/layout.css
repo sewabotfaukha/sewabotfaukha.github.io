@@ -512,3 +512,97 @@
   mix-blend-mode: screen;
   will-change: transform;
 }
+
+/* ==========================================================================
+   Prompt 5 — About enhancements, floating elements, typography hierarchy
+   ========================================================================== */
+
+/* Label besar "About" di background — sentuhan tipografi premium ala Awwwards */
+.about__bg-label {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(4rem, 16vw, 11rem);
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+  z-index: -1;
+  user-select: none;
+}
+
+.about__focus {
+  color: var(--text-muted);
+  font-size: var(--fs-small);
+}
+
+.about__focus span {
+  color: var(--accent-cyan);
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+/* ---------- Tech stack chips ---------- */
+.tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin-top: 0.25rem;
+}
+
+.tech-chip {
+  padding: 0.4rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  transition: transform var(--dur-fast) var(--ease-soft), border-color var(--dur-fast) var(--ease-soft),
+    color var(--dur-fast) var(--ease-soft);
+}
+
+.tech-chip:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-violet-soft);
+  color: var(--text-primary);
+}
+
+/* ---------- Floating decorative elements (glow dot / ring / hexagon) ---------- */
+.floating-el {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.floating-el--dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  box-shadow: 0 0 16px 2px var(--accent-cyan-soft);
+  animation: nexus-float-el 9s ease-in-out infinite;
+}
+
+.floating-el--ring {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--accent-violet-soft);
+  animation: nexus-float-el 12s ease-in-out infinite reverse;
+}
+
+.floating-el--hex {
+  width: 18px;
+  height: 18px;
+  background: transparent;
+  border: 1px solid var(--accent-cyan-soft);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation: nexus-float-el 14s ease-in-out infinite;
+}

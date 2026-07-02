@@ -55,20 +55,48 @@ export function initSectionTransition(onProgress) {
   });
 }
 
+/**
+ * Hero mengecil & memudar secara halus saat user mulai scroll ke About.
+ * Murni transform + opacity (GPU-friendly), di-scrub langsung oleh ScrollTrigger/Lenis.
+ */
+export function initHeroScrollTransition() {
+  const panel = document.querySelector('.hero__panel');
+  const about = document.querySelector('#about');
+  if (!panel || !about) return;
+
+  gsap.set(panel, { transformOrigin: 'center' });
+
+  gsap.to(panel, {
+    scale: 0.86,
+    opacity: 0.1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: about,
+      start: 'top bottom',
+      end: 'top 55%',
+      scrub: 1.2,
+    },
+  });
+}
+
 /** Reveal bertahap section About: opacity + translate + blur, stagger. */
 export function initAboutReveal() {
   const about = document.querySelector('#about');
   if (!about) return;
 
   const leftEls = about.querySelectorAll(
-    '.about__eyebrow, .about__title, .about__role, .about__desc, .about__buttons .btn'
+    '.about__eyebrow, .about__title, .about__role, .about__desc, .about__focus, .tech-stack, .about__buttons .btn'
   );
   const statEls = about.querySelectorAll('.stat-card');
 
   gsap
     .timeline({ scrollTrigger: { trigger: about, start: 'top 70%', once: true } })
     .from(leftEls, { opacity: 0, y: 32, filter: 'blur(10px)', duration: 1, stagger: 0.12, ease: 'power3.out' })
-    .from('.about__card', { opacity: 0, y: 40, filter: 'blur(14px)', duration: 1.2, ease: 'power3.out' }, '-=0.7')
+    .from(
+      '.about__card',
+      { opacity: 0, y: 40, scale: 0.94, filter: 'blur(14px)', duration: 1.2, ease: 'power3.out' },
+      '-=0.7'
+    )
     .from(statEls, { opacity: 0, y: 24, duration: 0.8, stagger: 0.1, ease: 'power3.out' }, '-=0.6');
 }
 

@@ -5,6 +5,7 @@
 // ============================================================================
 
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function createScene() {
   const scene = new THREE.Scene();
@@ -105,9 +106,39 @@ export function createAmbientParticles(count = 50) {
   return new THREE.Points(geo, mat);
 }
 
-/** Nebula — sphere besar di belakang, gradient radial halus dari dalam. */
-export function createNebulaBackdrop() {
-  const geo = new THREE.SphereGeometry(24, 32, 32);
+/** Soft shadow "blob" di bawah object — ringan (canvas texture), bukan shadow-map real-time. */
+export function createSoftShadow() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  const grad = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+  grad.addColorStop(0, 'rgba(0,0,0,0.5)');
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const mesh = new THREE.Mesh(
+    new THREE.CircleGeometry(1.1, 24),
+    new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = -1.7;
+  return mesh;
+}
+
+/** Reflection murah: environment map prosedural (tanpa asset HDR) via PMREMGenerator. */
+export function applyEnvironmentReflection(renderer, scene) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  pmrem.dispose();
+}
+
+/** Nebula — sphere besar di belakang, gradient terarah (bukan simetris) supaya rotasi lambat benar-benar terlihat bergerak. */
+export function createNebulaBackdrop(isMobile = false) {
+  const seg = isMobile ? 16 : 32;
+  const geo = new THREE.SphereGeometry(24, seg, seg);
   const mat = new THREE.ShaderMaterial({
     side: THREE.BackSide,
     depthWrite: false,
@@ -128,7 +159,7 @@ export function createNebulaBackdrop() {
       uniform vec3 colorA;
       uniform vec3 colorB;
       void main() {
-        float h = clamp(length(vPos) / 24.0, 0.0, 1.0);
+        float h = clamp((vPos.y * 0.6 + vPos.x * 0.35) / 24.0 * 0.5 + 0.5, 0.0, 1.0);
         vec3 color = mix(colorA, colorB, h);
         gl_FragColor = vec4(color, 0.9);
       }

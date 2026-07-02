@@ -109,6 +109,11 @@
   .about__blob {
     display: none; /* jaga performa di layar kecil */
   }
+
+  .about__bg-label,
+  .floating-el {
+    display: none; /* dekorasi murni, dimatikan di layar kecil demi performa & kerapian */
+  }
 }
 
 /* ---------- Layar sangat kecil ---------- */
