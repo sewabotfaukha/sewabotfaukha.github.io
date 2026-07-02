@@ -58,6 +58,9 @@
   <!-- ============ Loading Screen ============ -->
   <div class="nexus-loader" role="status" aria-live="polite">
     <span class="nexus-loader__mark">NEXUS · LOADING</span>
+    <div class="nexus-loader__bar" aria-hidden="true">
+      <div class="nexus-loader__bar-fill"></div>
+    </div>
   </div>
 
   <!-- ============ Canvas Three.js (latar belakang scene) ============ -->
@@ -104,7 +107,7 @@
       <span class="hero__axis">X <span>·</span> Y <span>·</span> Z — spatial by design</span>
 
       <button class="btn" data-action="explore" type="button">
-        <span>Explore Portfolio</span>
+        <span>Start Exploring</span>
         <span class="btn__arrow" aria-hidden="true">→</span>
       </button>
     </div>
@@ -140,11 +143,30 @@
         <p class="about__focus"><span>Fokus:</span> Interactive 3D · Motion Design · Frontend Architecture</p>
 
         <ul class="tech-stack" aria-label="Tech stack">
-          <li class="tech-chip">HTML5</li>
-          <li class="tech-chip">CSS3</li>
-          <li class="tech-chip">JavaScript</li>
-          <li class="tech-chip">Three.js</li>
-          <li class="tech-chip">GSAP</li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3l1.6 17L12 22l6.4-2L20 3H4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 8h8M8.6 12h6.8M9 16l3 1 3-1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>HTML5</span>
+          </li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.2"/></svg>
+            <span>CSS3</span>
+          </li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="7" y="16" font-size="9" fill="currentColor" font-family="monospace">JS</text></svg>
+            <span>JavaScript</span>
+          </li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,3 21,8.5 21,15.5 12,21 3,15.5 3,8.5" fill="none" stroke="currentColor" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="0.8"/></svg>
+            <span>Three.js</span>
+          </li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>
+            <span>GSAP</span>
+          </li>
+          <li class="tech-chip">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="17" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 8v8M8.6 6.8L15.2 11M8.6 17.2L15.2 13" stroke="currentColor" stroke-width="1.1"/></svg>
+            <span>Git</span>
+          </li>
         </ul>
 
         <div class="about__buttons">
@@ -161,12 +183,24 @@
 
       <div class="about__card" data-tilt>
         <div class="about__card-glow" aria-hidden="true"></div>
+
+        <div class="about__avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 20c1.4-3.8 4.4-5.8 7.5-5.8s6.1 2 7.5 5.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+
         <span class="about__card-eyebrow">Currently</span>
         <h3 class="about__card-title">Available for select projects</h3>
         <p class="about__card-text">
           Fokus pada portfolio interaktif, micro-interaction, dan
           pengalaman 3D di web.
         </p>
+
+        <ul class="timeline">
+          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2023</span> Mulai membangun proyek frontend interaktif</li>
+          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2024</span> Fokus mendalami Three.js &amp; motion design</li>
+          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2026</span> Merilis NEXUS — portfolio 3D interaktif</li>
+        </ul>
+
         <div class="about__card-reflection" aria-hidden="true"></div>
       </div>
     </div>

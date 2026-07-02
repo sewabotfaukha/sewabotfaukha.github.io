@@ -33,6 +33,13 @@ export function hideLoader(delay = 400) {
   window.setTimeout(() => loader.classList.add('is-hidden'), delay);
 }
 
+/** Update progress bar loading (0-100). Dipakai selagi aset/scene disiapkan. */
+export function setLoaderProgress(percent) {
+  const bar = document.querySelector('.nexus-loader__bar-fill');
+  if (!bar) return;
+  bar.style.width = `${Math.min(100, Math.max(0, percent))}%`;
+}
+
 function bindButtonGlowFollow(button) {
   let rect = null;
   button.addEventListener('pointerenter', () => {
@@ -108,6 +115,12 @@ export function bindCursorGlow() {
     glow.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
   });
   window.addEventListener('pointermove', handler, { passive: true });
+
+  // Membesar & lebih terang saat kursor di atas elemen interaktif — kesan "elegan".
+  document.querySelectorAll('.btn, .about__card, .stat-card, .tech-chip, .nexus-nav__logo').forEach((el) => {
+    el.addEventListener('pointerenter', () => glow.classList.add('is-active'), { passive: true });
+    el.addEventListener('pointerleave', () => glow.classList.remove('is-active'), { passive: true });
+  });
 }
 
 export function initUI() {

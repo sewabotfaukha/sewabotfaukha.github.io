@@ -9,6 +9,8 @@ import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger);
 
+let lenisInstance = null;
+
 export function configureGsapDefaults() {
   gsap.defaults({ ease: 'power3.out', duration: 0.8 });
 }
@@ -38,7 +40,44 @@ export function initSmoothScroll() {
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
+  lenisInstance = lenis;
+
+  // Refresh ScrollTrigger setelah semua aset (termasuk web font) benar-benar siap —
+  // mencegah start/end trigger meleset akibat perubahan tinggi layout (penyebab
+  // scroll terasa "patah/loncat" di titik tertentu).
+  window.addEventListener('load', () => ScrollTrigger.refresh());
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => ScrollTrigger.refresh());
+  }
+
+  let resizeTimer;
+  window.addEventListener(
+    'resize',
+    () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        lenis.resize();
+        ScrollTrigger.refresh();
+      }, 200);
+    },
+    { passive: true }
+  );
+
   return lenis;
+}
+
+/** Scroll halus terprogram ke section tertentu (dipakai tombol Explore/Start Exploring). */
+export function scrollToSelector(selector, options = {}) {
+  const target = document.querySelector(selector);
+  if (!target) {
+    console.warn(`[NEXUS] scrollToSelector: "${selector}" tidak ditemukan.`);
+    return;
+  }
+  if (lenisInstance) {
+    lenisInstance.scrollTo(target, { duration: 1.4, easing: (t) => 1 - Math.pow(1 - t, 3), ...options });
+  } else {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 /** Progress 0→1 dari mulai masuk viewport #about — dipakai untuk transisi cinematic Hero→About. */
@@ -67,13 +106,14 @@ export function initHeroScrollTransition() {
   gsap.set(panel, { transformOrigin: 'center' });
 
   gsap.to(panel, {
-    scale: 0.86,
-    opacity: 0.1,
+    scale: 0.8,
+    opacity: 0.22, // tetap sedikit terlihat, tidak langsung hilang
+    filter: 'blur(4px)',
     ease: 'none',
     scrollTrigger: {
       trigger: about,
       start: 'top bottom',
-      end: 'top 55%',
+      end: 'top 45%',
       scrub: 1.2,
     },
   });

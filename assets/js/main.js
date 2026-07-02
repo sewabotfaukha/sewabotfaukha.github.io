@@ -20,9 +20,10 @@ import {
   initSmoothScroll,
   initSectionTransition,
   initHeroScrollTransition,
+  scrollToSelector,
   cameraFlyBump,
 } from './animation.js';
-import { initUI, hideLoader } from './ui.js';
+import { initUI, hideLoader, setLoaderProgress } from './ui.js';
 import { initEffects } from './effects.js';
 
 function bootstrap() {
@@ -64,7 +65,13 @@ function bootstrap() {
   applyEnvironmentReflection(renderer, scene);
 
   createLoadingManager({ onLoad: () => hideLoader() });
-  hideLoader(300);
+
+  // Belum ada aset berat (texture/model) untuk dimuat pada tahap ini, jadi progress
+  // disimulasikan singkat agar loading screen tetap terasa premium & tidak blank.
+  setLoaderProgress(35);
+  requestAnimationFrame(() => setLoaderProgress(75));
+  window.setTimeout(() => setLoaderProgress(100), 260);
+  hideLoader(420);
 
   const { composer, resize: resizeEffects } = initEffects({ scene, camera, renderer });
 
@@ -78,8 +85,11 @@ function bootstrap() {
   }
   window.addEventListener('resize', onResize);
 
-  // -- Fly-bump kamera saat tombol Explore diklik ---------------------------
-  window.addEventListener('nexus:explore', () => cameraFlyBump(camera, rig.state));
+  // -- Fly-bump kamera + scroll otomatis ke About saat tombol Explore diklik --
+  window.addEventListener('nexus:explore', () => {
+    cameraFlyBump(camera, rig.state);
+    scrollToSelector('#about');
+  });
 
   // -- Transisi cinematic Hero → About (di-drive oleh scroll, via Lenis+ScrollTrigger) --
   let scrollProgress = 0;
@@ -127,6 +137,8 @@ function bootstrap() {
     stars.position.x = rig.mouse.x * 0.15;
     stars.position.y = -rig.mouse.y * 0.1;
     particles.rotation.y = -elapsed * 0.015;
+    particles.position.x = rig.mouse.x * 0.25;
+    particles.position.y = -rig.mouse.y * 0.18;
     nebula.rotation.y = elapsed * 0.004;
 
     composer.render();
