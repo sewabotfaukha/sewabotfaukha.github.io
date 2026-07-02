@@ -14,7 +14,7 @@ export function createCameraRig(camera) {
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
   }
-  window.addEventListener('pointermove', onPointerMove);
+  window.addEventListener('pointermove', onPointerMove, { passive: true });
 
   function update(elapsed) {
     // Idle cinematic drift — sangat kecil, tidak pernah diam total.

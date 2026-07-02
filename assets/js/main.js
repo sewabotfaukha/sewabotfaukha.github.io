@@ -55,8 +55,8 @@ function bootstrap() {
 
   const { pointViolet, rimCyan } = createLighting(scene);
 
-  const stars = createStarfield();
-  const particles = createAmbientParticles();
+  const stars = createStarfield(isMobile ? 160 : 380);
+  const particles = createAmbientParticles(isMobile ? 20 : 50);
   const nebula = createNebulaBackdrop();
   scene.add(nebula, stars, particles);
 
@@ -115,12 +115,14 @@ function bootstrap() {
     heroGroup.rotation.x = tiltX;
     heroGroup.rotation.y = rotY + tiltY;
 
-    // Glow (point light violet) mengikuti posisi mouse.
-    pointViolet.position.x = -1.5 + rig.mouse.x * 1.5;
-    pointViolet.position.y = 1 - rig.mouse.y * 1.2;
+    // Glow (point light violet) mengikuti posisi mouse — lebih pelan dari objek (parallax berlapis).
+    pointViolet.position.x = -1.5 + rig.mouse.x * 0.8;
+    pointViolet.position.y = 1 - rig.mouse.y * 0.6;
 
-    // Background hidup: rotasi sangat pelan, tidak membebani performa.
+    // Background hidup: rotasi sangat pelan + parallax sangat kecil mengikuti mouse.
     stars.rotation.y = elapsed * 0.008;
+    stars.position.x = rig.mouse.x * 0.15;
+    stars.position.y = -rig.mouse.y * 0.1;
     particles.rotation.y = -elapsed * 0.015;
     nebula.rotation.y = elapsed * 0.004;
 

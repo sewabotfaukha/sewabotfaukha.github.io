@@ -18,9 +18,9 @@ export function initEffects({ scene, camera, renderer }) {
 
   const bloom = new UnrealBloomPass(
     new THREE.Vector2(window.innerWidth, window.innerHeight),
-    isMobile ? 0.55 : 0.85, // strength
-    0.55, // radius
-    0.18  // threshold
+    isMobile ? 0.32 : 0.5, // strength — dikurangi agar tulisan NEXUS tetap fokus utama
+    0.4, // radius
+    0.32 // threshold — makin tinggi, makin selektif area yang bloom
   );
   composer.addPass(bloom);
   composer.addPass(new OutputPass());

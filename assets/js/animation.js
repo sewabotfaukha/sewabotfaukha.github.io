@@ -26,9 +26,11 @@ export function playIntroTimeline() {
 /** Smooth scroll "berat tapi halus" — Lenis disinkronkan ke gsap.ticker (bukan rAF baru). */
 export function initSmoothScroll() {
   const lenis = new Lenis({
-    duration: 1.15,
+    duration: 1.05,
     easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
     smoothWheel: true,
+    autoRaf: false, // WAJIB false — di-drive manual lewat gsap.ticker di bawah,
+                     // dua rAF loop scroll berjalan bersamaan = penyebab patah-patah.
   });
 
   lenis.on('scroll', ScrollTrigger.update);
@@ -59,7 +61,7 @@ export function initAboutReveal() {
   if (!about) return;
 
   const leftEls = about.querySelectorAll(
-    '.about__eyebrow, .about__title, .about__name, .about__role, .about__desc, .about__buttons .btn'
+    '.about__eyebrow, .about__title, .about__role, .about__desc, .about__buttons .btn'
   );
   const statEls = about.querySelectorAll('.stat-card');
 
@@ -81,12 +83,16 @@ export function initCardParallax() {
   const toRotY = gsap.quickTo(panel, 'rotationY', { duration: 0.6, ease: 'power3' });
   gsap.set(panel, { transformPerspective: 900, transformOrigin: 'center' });
 
-  window.addEventListener('pointermove', (e) => {
-    const nx = (e.clientX / window.innerWidth) * 2 - 1;
-    const ny = (e.clientY / window.innerHeight) * 2 - 1;
-    toRotX(ny * -4);
-    toRotY(nx * 5);
-  });
+  window.addEventListener(
+    'pointermove',
+    (e) => {
+      const nx = (e.clientX / window.innerWidth) * 2 - 1;
+      const ny = (e.clientY / window.innerHeight) * 2 - 1;
+      toRotX(ny * -2.6); // maksimal ~3° — halus, tidak berlebihan
+      toRotY(nx * 3);
+    },
+    { passive: true }
+  );
 
   window.addEventListener('pointerleave', () => {
     toRotX(0);
@@ -108,16 +114,27 @@ export function initTiltCard(selector) {
   const toY = gsap.quickTo(card, 'y', { duration: 0.5, ease: 'power3' });
   gsap.set(card, { transformPerspective: 800, transformOrigin: 'center' });
 
-  card.addEventListener('pointermove', (e) => {
-    const rect = card.getBoundingClientRect();
-    const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-    const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
-    toRotX(ny * -6);
-    toRotY(nx * 7);
+  let rect = null;
+
+  card.addEventListener('pointerenter', () => {
+    rect = card.getBoundingClientRect();
+    toY(-6);
   });
 
-  card.addEventListener('pointerenter', () => toY(-6));
+  card.addEventListener(
+    'pointermove',
+    (e) => {
+      if (!rect) rect = card.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const ny = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+      toRotX(ny * -3);
+      toRotY(nx * 3);
+    },
+    { passive: true }
+  );
+
   card.addEventListener('pointerleave', () => {
+    rect = null;
     toRotX(0);
     toRotY(0);
     toY(0);
@@ -132,16 +149,16 @@ export function initTiltCard(selector) {
 export function cameraFlyBump(camera, rigState) {
   gsap
     .timeline()
-    .to(rigState, { impulseZ: -0.7, duration: 0.35, ease: 'power2.out' })
-    .to(rigState, { impulseZ: 0, duration: 0.6, ease: 'power3.inOut' })
+    .to(rigState, { impulseZ: -0.5, duration: 0.22, ease: 'power2.out', overwrite: true })
+    .to(rigState, { impulseZ: 0, duration: 0.45, ease: 'power3.inOut' })
     .to(
       camera,
-      { fov: camera.fov - 4, duration: 0.35, ease: 'power2.out', onUpdate: () => camera.updateProjectionMatrix() },
+      { fov: camera.fov - 3, duration: 0.22, ease: 'power2.out', onUpdate: () => camera.updateProjectionMatrix() },
       0
     )
     .to(
       camera,
-      { fov: camera.fov, duration: 0.6, ease: 'power3.inOut', onUpdate: () => camera.updateProjectionMatrix() },
-      0.35
+      { fov: camera.fov, duration: 0.45, ease: 'power3.inOut', onUpdate: () => camera.updateProjectionMatrix() },
+      0.22
     );
 }

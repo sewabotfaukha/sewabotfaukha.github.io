@@ -2,12 +2,29 @@
 // NEXUS — ui.js
 // Interaksi non-3D: loading screen, tombol premium (glow-follow + ripple),
 // cursor glow, label koordinat navbar. Semua akses DOM lewat safeQuery().
+// Semua listener pointermove: passive + throttle via rAF (hindari layout
+// thrash / repaint berlebih → scroll & interaksi tetap instan).
 // ============================================================================
 
 function safeQuery(selector) {
   const el = document.querySelector(selector);
   if (!el) console.warn(`[NEXUS] Elemen "${selector}" tidak ditemukan di DOM.`);
   return el;
+}
+
+/** Wrapper: hanya jalankan handler sekali per frame (rAF throttle). */
+function rafThrottle(fn) {
+  let scheduled = false;
+  let lastEvent;
+  return (event) => {
+    lastEvent = event;
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      fn(lastEvent);
+      scheduled = false;
+    });
+  };
 }
 
 export function hideLoader(delay = 400) {
@@ -17,11 +34,17 @@ export function hideLoader(delay = 400) {
 }
 
 function bindButtonGlowFollow(button) {
-  button.addEventListener('pointermove', (e) => {
-    const rect = button.getBoundingClientRect();
+  let rect = null;
+  button.addEventListener('pointerenter', () => {
+    rect = button.getBoundingClientRect();
+  });
+  const handler = rafThrottle((e) => {
+    if (!rect) rect = button.getBoundingClientRect();
     button.style.setProperty('--mx', `${((e.clientX - rect.left) / rect.width) * 100}%`);
     button.style.setProperty('--my', `${((e.clientY - rect.top) / rect.height) * 100}%`);
   });
+  button.addEventListener('pointermove', handler, { passive: true });
+  button.addEventListener('pointerleave', () => { rect = null; });
 }
 
 function bindButtonRipple(button) {
@@ -67,22 +90,24 @@ export function bindCoordinateLabel() {
   const coordsEl = safeQuery('[data-coords]');
   if (!coordsEl) return;
 
-  window.addEventListener('pointermove', (event) => {
+  const handler = rafThrottle((event) => {
     if (!coordsEl.isConnected) return;
     const x = Math.round((event.clientX / window.innerWidth) * 100);
     const y = Math.round((event.clientY / window.innerHeight) * 100);
     coordsEl.textContent = `X ${x.toString().padStart(2, '0')} · Y ${y.toString().padStart(2, '0')}`;
   });
+  window.addEventListener('pointermove', handler, { passive: true });
 }
 
-/** Titik cahaya lembut yang mengikuti kursor (dekorasi, memakai transform agar ringan). */
+/** Titik cahaya lembut yang mengikuti kursor — translate3d agar full GPU-composited. */
 export function bindCursorGlow() {
   const glow = safeQuery('.cursor-glow');
   if (!glow) return;
 
-  window.addEventListener('pointermove', (e) => {
+  const handler = rafThrottle((e) => {
     glow.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
   });
+  window.addEventListener('pointermove', handler, { passive: true });
 }
 
 export function initUI() {

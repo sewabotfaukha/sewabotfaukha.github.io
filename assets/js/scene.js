@@ -42,20 +42,20 @@ export function createHeroObject() {
     new THREE.MeshBasicMaterial({
       color: 0x7c5cff,
       transparent: true,
-      opacity: 0.28,
+      opacity: 0.14,
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     })
   );
-  glow.scale.setScalar(1.18);
+  glow.scale.setScalar(1.08);
 
   group.add(core, glow);
   return { group, core, glow };
 }
 
-/** Titik bintang latar — jauh, statis relatif, hanya berkedip pelan lewat opacity shader sederhana. */
-export function createStarfield(count = 900) {
+/** Titik bintang latar — sedikit, kecil, redup, terasa seperti debu cahaya jauh. */
+export function createStarfield(count = 380) {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const r = 18 + Math.random() * 22;
@@ -70,9 +70,9 @@ export function createStarfield(count = 900) {
 
   const mat = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 0.045,
+    size: 0.028,
     transparent: true,
-    opacity: 0.55,
+    opacity: 0.32,
     sizeAttenuation: true,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
@@ -81,8 +81,8 @@ export function createStarfield(count = 900) {
   return new THREE.Points(geo, mat);
 }
 
-/** Partikel ambient dekat object — melayang pelan, memberi kedalaman. */
-export function createAmbientParticles(count = 120) {
+/** Partikel ambient dekat object — sedikit, kecil, melayang sangat pelan (debu cahaya). */
+export function createAmbientParticles(count = 50) {
   const positions = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     positions[i * 3] = (Math.random() - 0.5) * 8;
@@ -94,9 +94,9 @@ export function createAmbientParticles(count = 120) {
 
   const mat = new THREE.PointsMaterial({
     color: 0x00e5ff,
-    size: 0.03,
+    size: 0.018,
     transparent: true,
-    opacity: 0.5,
+    opacity: 0.28,
     sizeAttenuation: true,
     blending: THREE.AdditiveBlending,
     depthWrite: false,

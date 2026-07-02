@@ -15,7 +15,9 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* scroll-behavior TIDAK diset ke smooth di sini — Lenis (animation.js)
+     mengambil alih smooth scroll sepenuhnya. Mengaktifkan keduanya
+     menyebabkan dua sistem scroll saling tarik dan terasa patah-patah. */
 }
 
 /* Background gelap didefinisikan juga di sini (selain critical CSS inline
