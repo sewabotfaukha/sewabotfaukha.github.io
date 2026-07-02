@@ -34,15 +34,31 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-void);
+  background: var(--bg-void, #08080d);
   transition: opacity var(--dur-slow) var(--ease-premium), visibility var(--dur-slow);
+  /* FIX (5.6.1) — CSS-only failsafe: loader ini WAJIB hilang sendiri walau
+     JS gagal total (mis. salah satu CDN di importmap gagal/telat dimuat di
+     GitHub Pages). Tanpa ini, overlay full-screen ini bisa nyangkut selamanya
+     dan menutupi/memblokir klik ke seluruh Hero & About di baliknya — exact
+     match dengan gejala "semua konten hilang". JS (loader.js) tetap
+     menyembunyikannya lebih cepat & mulus lewat class .is-hidden dalam
+     kondisi normal; animation ini murni jaring pengaman kalau itu gagal. */
+  animation: nexus-loader-failsafe 0.6s ease 4s forwards;
+}
+
+@keyframes nexus-loader-failsafe {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
 }
 
 .nexus-loader__mark {
   font-family: var(--font-mono);
   font-size: var(--fs-small);
   letter-spacing: var(--tracking-wide);
-  color: var(--text-muted);
+  color: var(--text-muted, #74748a);
   text-transform: uppercase;
 }
 
@@ -157,7 +173,11 @@
   font-size: var(--fs-hero);
   line-height: 0.95;
   letter-spacing: var(--tracking-tight);
-  background: linear-gradient(180deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  /* FIX (5.6.1): fallback ditambahkan langsung di var() gradient di bawah —
+     dengan ini, gradient SELALU valid & solid, tidak mungkin lagi jatuh ke
+     "invalid background + color:transparent" = teks hilang, apa pun status
+     variables.css. */
+  background: linear-gradient(180deg, var(--text-primary, #f5f5fb) 0%, var(--text-secondary, #b9b9c9) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -200,8 +220,8 @@
   font-weight: 600;
   font-size: var(--fs-small);
   letter-spacing: 0.03em;
-  color: var(--bg-void);
-  background: var(--accent-gradient);
+  color: var(--bg-void, #08080d); /* FIX (5.6.1): fallback — tombol tidak boleh transparan/hilang */
+  background: var(--accent-gradient, linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%));
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
@@ -392,7 +412,7 @@
 /* Varian outline untuk tombol sekunder (Download CV) */
 .btn--outline {
   background: transparent;
-  color: var(--text-primary);
+  color: var(--text-primary, #f5f5fb);
   border: 1px solid var(--glass-border);
 }
 
@@ -490,7 +510,7 @@
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.8rem;
-  background: var(--accent-gradient);
+  background: var(--accent-gradient, linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%)); /* FIX (5.6.1) */
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

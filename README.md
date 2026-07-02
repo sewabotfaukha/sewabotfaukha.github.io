@@ -12,6 +12,44 @@ setup Three.js dasar (scene, camera, renderer, OrbitControls) dan
 konfigurasi GSAP awal. Belum ada object 3D atau animasi besar — struktur
 ini dirancang agar mudah dikembangkan pada prompt-prompt berikutnya.
 
+### Prompt 5.6.1 — Critical Fix: Invisible Text di Production (GitHub Pages)
+
+Laporan: setelah deploy ke GitHub Pages, judul "NEXUS", tombol "Start
+Exploring", dan teks section About tidak muncul di Chrome — padahal normal
+saat ditest lokal. Setelah audit menyeluruh, ditemukan **tiga bug yang saling
+bertumpuk**, semuanya berakar dari asumsi bahwa file CSS/JS eksternal PASTI
+berhasil & tepat waktu dimuat — asumsi yang valid di localhost tapi tidak
+selalu valid di hosting statis (race condition CDN, cache, network):
+
+1. **Gradient-text tanpa fallback.** `.hero__title` ("NEXUS") dan
+   `.stat-card__value` memakai teknik `color:transparent` +
+   `background-clip:text` dengan `var(--text-primary)`/`var(--accent-gradient)`
+   **tanpa nilai fallback**. Kalau `variables.css` belum aktif saat elemen
+   itu pertama kali di-render, `background` jadi invalid (dianggap tidak ada)
+   sementara `color:transparent` tetap berlaku apa adanya → teks benar-benar
+   transparan, tidak ada fallback warna apa pun.
+   **Fix:** semua `var()` kritis sekarang punya fallback eksplisit
+   (`var(--text-primary, #f5f5fb)`, dst), DAN seluruh design token
+   (`:root { --bg-void: ...; --text-primary: ...; dst }`) diduplikasi ke
+   `<style>` inline di `<head>` sehingga tersedia sejak dokumen pertama kali
+   di-parse — tidak mungkin lagi "belum aktif".
+2. **Loading screen bisa nyangkut selamanya.** `.nexus-loader` adalah overlay
+   full-screen (`position:fixed; inset:0`) yang HANYA disembunyikan lewat
+   `classList.add('is-hidden')` dari JS. Kalau salah satu CDN di import map
+   (three.js/GSAP/Lenis) gagal/lambat dimuat, `main.js` tidak pernah sempat
+   jalan, overlay ini tidak pernah disembunyikan, dan menutupi seluruh
+   Hero + About di baliknya — persis gejala "semua konten hilang".
+   **Fix:** ditambahkan CSS-only failsafe (`animation: ... 4s forwards`) yang
+   menjamin loader hilang sendiri setelah 4 detik apa pun yang terjadi pada JS.
+3. **Tidak ada jaring pengaman kalau animasi reveal gagal.** Ditambahkan
+   watchdog kecil (script biasa, bukan ES module, jadi tidak ikut gagal kalau
+   import CDN bermasalah) yang mengecek ulang opacity elemen-elemen kritis
+   2.5 detik setelah `load`, dan memaksa terlihat kalau ada yang tersangkut.
+
+Ketiganya independen satu sama lain (defense-in-depth) — cukup satu yang
+bekerja untuk mencegah halaman terlihat kosong, apa pun penyebab pastinya di
+sisi hosting.
+
 ### Prompt 5.6 — Architecture Fix (transisi antar-section)
 
 Fokus prompt ini murni perbaikan struktur/arsitektur, **tanpa fitur baru**,

@@ -16,16 +16,96 @@
   />
 
   <!-- ============ Critical CSS (fallback) ============ -->
-  <!-- Lapisan pertahanan pertama: memastikan background tetap gelap premium
-       sejak render pertama, bahkan sebelum/jika file CSS eksternal di bawah
-       gagal atau telat dimuat. Nilai warna sengaja di-hardcode (bukan var())
-       karena file variables.css belum tentu sudah aktif di titik ini. -->
+  <!-- Lapisan pertahanan pertama & PALING PENTING: mendefinisikan seluruh
+       design token (:root variables) langsung inline, SEBELUM file CSS
+       eksternal (variables.css dkk) sempat dimuat.
+
+       FIX (5.6.1) — ROOT CAUSE dari bug "teks invisible" di production/GitHub
+       Pages: hampir semua selector di layout.css memakai var(--warna-dsb)
+       TANPA fallback (contoh: `.hero__title` pakai teknik gradient-text
+       `color:transparent` + `background-clip:text` dengan `var(--text-primary)`
+       tanpa fallback). Di localhost, file CSS biasanya sempat termuat duluan
+       sebelum browser sempat render teks, jadi bug ini tidak kelihatan. Tapi
+       di hosting statis seperti GitHub Pages, urutan/timing load resource
+       BISA berbeda (CDN, cache, race condition beberapa <link> paralel) —
+       begitu variables.css belum aktif saat teks pertama kali di-paint,
+       SEMUA var(--...) yang tidak punya fallback jadi invalid, dan untuk
+       .hero__title ini artinya: background gradient invalid (dianggap tidak
+       ada) + color:transparent (hardcode) = TEKS BENAR-BENAR HILANG. Ini
+       berlaku untuk hampir semua teks/tombol di seluruh halaman, bukan cuma
+       judul "NEXUS" — makanya tombol Start Exploring & teks About juga ikut
+       kena.
+
+       Perbaikan permanen: definisikan token yang sama persis di sini (inline,
+       selalu tersedia dari detik pertama, tidak mungkin gagal load karena ini
+       bagian dari dokumen HTML itu sendiri). variables.css tetap tetap di-load
+       seperti biasa dan akan meng-override dengan nilai IDENTIK begitu aktif —
+       jadi tidak ada perubahan visual apa pun, ini murni lapisan pengaman. -->
   <style>
+    :root {
+      --bg-void: #08080d;
+      --bg-elevated: #101018;
+      --bg-elevated-2: #16161f;
+      --accent-violet: #7c5cff;
+      --accent-violet-soft: rgba(124, 92, 255, 0.35);
+      --accent-cyan: #00e5ff;
+      --accent-cyan-soft: rgba(0, 229, 255, 0.25);
+      --accent-gradient: linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%);
+      --text-primary: #f5f5fb;
+      --text-secondary: #b9b9c9;
+      --text-muted: #74748a;
+      --glass-bg: rgba(255, 255, 255, 0.04);
+      --glass-bg-strong: rgba(255, 255, 255, 0.07);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-blur: 14px;
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      --font-display: 'Space Grotesk', 'Helvetica Neue', sans-serif;
+      --font-body: 'Inter', 'Helvetica Neue', sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+      --fs-hero: clamp(3.5rem, 12vw, 9rem);
+      --fs-h2: clamp(2.25rem, 5.5vw, 3.75rem);
+      --fs-body: 1rem;
+      --fs-small: 0.8rem;
+      --fs-micro: 0.68rem;
+      --tracking-tight: -0.02em;
+      --tracking-wide: 0.28em;
+      --space-xs: 0.5rem;
+      --space-sm: 1rem;
+      --space-md: 1.75rem;
+      --space-lg: 3rem;
+      --space-xl: 5rem;
+      --space-2xl: 8rem;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 28px;
+      --radius-pill: 999px;
+      --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+      --dur-fast: 0.25s;
+      --dur-medium: 0.6s;
+      --dur-slow: 1.2s;
+      --z-canvas: 0;
+      --z-noise: 1;
+      --z-content: 10;
+      --z-nav: 50;
+      --z-overlay: 100;
+    }
+
     html, body {
-      background-color: #08080d;
-      color: #f5f5fb;
+      background-color: var(--bg-void);
+      color: var(--text-primary);
       margin: 0;
       min-height: 100vh;
+    }
+
+    /* Jaring pengaman KEDUA khusus untuk judul "NEXUS": kalau (karena alasan
+       apa pun) teknik gradient-text di layout.css tidak aktif tepat waktu,
+       aturan paling dasar ini menjamin teksnya tetap SOLID & TERLIHAT
+       (bukan transparent) sejak elemen pertama kali di-paint. layout.css
+       akan meng-override dengan versi gradient begitu aktif — tidak ada
+       downgrade visual, cuma lapisan aman tambahan. -->
+    .hero__title {
+      color: var(--text-primary);
     }
   </style>
 
@@ -242,5 +322,40 @@
 
   <!-- ============ Entry Point JavaScript (ES Module) ============ -->
   <script type="module" src="assets/js/main.js"></script>
+
+  <!--
+    ============ Visibility Watchdog (Prompt 5.6.1) ============
+    Sengaja BUKAN type="module" dan TIDAK mengimpor apa pun — supaya tetap
+    berjalan walau main.js gagal total (misal salah satu CDN di importmap
+    gagal/lambat dimuat). Satu-satunya tugas script ini: menjamin konten inti
+    (judul, tombol Explore, teks About) TIDAK PERNAH tersangkut di opacity
+    mendekati 0 kalau animasi intro/reveal gagal selesai karena alasan apa pun.
+    Tidak memakai !important & tidak menyentuh transform, supaya kalau animasi
+    scroll (Hero fade saat discroll ke About) sedang sah berjalan, ini tidak
+    mengganggunya — begitu discroll lagi, GSAP scrub akan langsung menimpa
+    balik dengan nilai yang benar.
+  -->
+  <script>
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var criticalSelectors = [
+          '.hero__panel', '.hero__eyebrow', '.hero__title', '.hero__subtitle',
+          '.hero__axis', '.hero .btn',
+          '.about__eyebrow', '.about__title', '.about__role', '.about__desc',
+          '.about__focus', '.tech-stack', '.about__buttons .btn',
+          '.about__card', '.stat-card'
+        ];
+        criticalSelectors.forEach(function (sel) {
+          document.querySelectorAll(sel).forEach(function (el) {
+            var op = parseFloat(getComputedStyle(el).opacity);
+            if (isNaN(op) || op < 0.5) {
+              el.style.opacity = '1';
+              el.style.filter = 'none';
+            }
+          });
+        });
+      }, 2500);
+    });
+  </script>
 </body>
 </html>
