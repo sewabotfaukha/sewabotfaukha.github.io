@@ -15,8 +15,30 @@ export function configureGsapDefaults() {
   gsap.defaults({ ease: 'power3.out', duration: 0.8 });
 }
 
-export function playIntroTimeline() {
-  const tl = gsap.timeline();
+export function playIntroTimeline(onComplete) {
+  const tl = gsap.timeline({
+    onComplete: () => {
+      // FIX (5.6.3) — ROOT CAUSE dari bug "NEXUS hilang & tidak balik lagi
+      // saat scroll ke atas": initHeroScrollTransition() sebelumnya dipanggil
+      // hampir BERSAMAAN dengan intro timeline ini (keduanya jalan di
+      // safeInitNonThreeParts() secara berurutan tanpa jeda). Karena GSAP
+      // punya default overwrite behavior per-properti, tween scroll (dibuat
+      // belakangan) langsung MENGAMBIL ALIH kontrol opacity/y dari tween intro
+      // yang MASIH BERJALAN — dan menangkap nilai "start" dari kondisi
+      // setengah-jalan itu (misal opacity ~0.3), bukan dari kondisi akhir
+      // intro (opacity 1). Karena scroll-scrub itu murni berbasis posisi
+      // scroll, begitu ia "menang", posisi awal yang salah itu ikut terbawa
+      // selamanya — walau discroll balik ke progress 0, hasilnya tetap nilai
+      // yang salah tadi, bukan opacity 1 yang benar. Efeknya persis seperti
+      // yang dilaporkan: NEXUS hilang setelah scroll sedikit lalu tidak
+      // pernah kembali walau sudah discroll ke atas lagi.
+      //
+      // Perbaikan: tween scroll-fade (initHeroScrollTransition) HANYA dibuat
+      // setelah intro ini benar-benar selesai (onComplete), jadi ia menangkap
+      // kondisi akhir yang benar (opacity 1, scale 1, y 0) sebagai titik awal.
+      if (typeof onComplete === 'function') onComplete();
+    },
+  });
   tl.from('.hero__panel', { opacity: 0, y: 24, duration: 1, ease: 'power4.out' }).from(
     '.hero__eyebrow, .hero__title, .hero__subtitle, .hero__axis, .btn',
     { opacity: 0, y: 16, stagger: 0.12, duration: 0.8 },
@@ -124,6 +146,11 @@ export function initHeroScrollTransition() {
   const hero = document.querySelector('.hero');
   if (!panel || !hero) return;
 
+  // FIX (5.6.3) — safety-net tambahan: pastikan tidak ada inline style sisa
+  // (opacity/transform/filter) dari tween lain sebelum tween scroll-fade ini
+  // dibuat, supaya titik awalnya SELALU kondisi normal (opacity 1, scale 1,
+  // y 0) — apa pun yang terjadi pada urutan pemanggilan fungsi ini.
+  gsap.set(panel, { clearProps: 'opacity,transform,filter' });
   gsap.set(panel, { transformOrigin: 'center', willChange: 'transform, opacity, filter' });
 
   gsap.to(panel, {

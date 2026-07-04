@@ -544,23 +544,6 @@
    Prompt 5 — About enhancements, floating elements, typography hierarchy
    ========================================================================== */
 
-/* Label besar "About" di background — sentuhan tipografi premium ala Awwwards */
-.about__bg-label {
-  position: absolute;
-  top: 2%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(4rem, 16vw, 11rem);
-  line-height: 1;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.06);
-  pointer-events: none;
-  z-index: -1;
-  user-select: none;
-}
-
 .about__focus {
   color: var(--text-muted);
   font-size: var(--fs-small);

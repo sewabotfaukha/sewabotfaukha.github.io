@@ -9,10 +9,10 @@ import * as THREE from 'three';
 
 // FIX (5.6.2) — cache-busting: query string ?v= pada tiap import lokal supaya
 // browser tidak diam-diam memakai versi file .js lama dari cache setelah deploy baru.
-import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js?v=5.6.2';
-import { createCamera, updateCameraOnResize } from './camera.js?v=5.6.2';
-import { createCameraRig } from './controls.js?v=5.6.2';
-import { createLoadingManager } from './loader.js?v=5.6.2';
+import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js?v=5.6.3';
+import { createCamera, updateCameraOnResize } from './camera.js?v=5.6.3';
+import { createCameraRig } from './controls.js?v=5.6.3';
+import { createLoadingManager } from './loader.js?v=5.6.3';
 import {
   configureGsapDefaults,
   playIntroTimeline,
@@ -24,9 +24,9 @@ import {
   initHeroScrollTransition,
   scrollToSelector,
   cameraFlyBump,
-} from './animation.js?v=5.6.2';
-import { initUI, hideLoader, setLoaderProgress } from './ui.js?v=5.6.2';
-import { initEffects } from './effects.js?v=5.6.2';
+} from './animation.js?v=5.6.3';
+import { initUI, hideLoader, setLoaderProgress } from './ui.js?v=5.6.3';
+import { initEffects } from './effects.js?v=5.6.3';
 
 function bootstrap() {
   const canvas = document.querySelector('#nexus-canvas');
@@ -178,10 +178,14 @@ function safeInitNonThreeParts() {
   try { configureGsapDefaults(); } catch (err) { console.error('[NEXUS] GSAP defaults gagal:', err); }
   try { initSmoothScroll(); } catch (err) { console.error('[NEXUS] Smooth scroll gagal:', err); }
   try { initUI(); } catch (err) { console.error('[NEXUS] initUI gagal:', err); }
-  try { playIntroTimeline(); } catch (err) { console.error('[NEXUS] Intro timeline gagal:', err); }
+  try {
+    playIntroTimeline(() => {
+      // Dipanggil setelah intro selesai — lihat catatan FIX (5.6.3) di animation.js
+      try { initHeroScrollTransition(); } catch (err) { console.error('[NEXUS] Hero scroll transition gagal:', err); }
+    });
+  } catch (err) { console.error('[NEXUS] Intro timeline gagal:', err); }
   try { initCardParallax(); } catch (err) { console.error('[NEXUS] Card parallax gagal:', err); }
   try { initTiltCard('.about__card'); } catch (err) { console.error('[NEXUS] Tilt card gagal:', err); }
-  try { initHeroScrollTransition(); } catch (err) { console.error('[NEXUS] Hero scroll transition gagal:', err); }
   try { initAboutReveal(); } catch (err) { console.error('[NEXUS] About reveal gagal:', err); }
   hideLoader(800);
 }
