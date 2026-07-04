@@ -1,73 +1,74 @@
 /* ==========================================================================
-   NEXUS — Design Tokens
-   Semua nilai warna, tipografi, spacing, dan easing terpusat di sini.
-   Jangan hardcode nilai desain di file CSS lain — selalu rujuk variable ini.
+   VARIABLES — Design tokens for Internet Map (Dark Theme)
    ========================================================================== */
 
 :root {
-  /* ---------- Warna dasar (Base / Void) ---------- */
-  --bg-void: #08080d;          /* latar utama, hampir hitam dengan tint indigo */
-  --bg-elevated: #101018;      /* permukaan kartu / panel */
-  --bg-elevated-2: #16161f;    /* lapisan lebih terang untuk hover/aktif */
+  /* ---- Color: Background ---- */
+  --color-bg-void: #05060a;
+  --color-bg-deep: #0a0c14;
+  --color-bg-panel: #0e1018;
 
-  /* ---------- Warna aksen (Duotone: violet ↔ cyan) ---------- */
-  --accent-violet: #7c5cff;
-  --accent-violet-soft: rgba(124, 92, 255, 0.35);
-  --accent-cyan: #00e5ff;
-  --accent-cyan-soft: rgba(0, 229, 255, 0.25);
-  --accent-gradient: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-cyan) 100%);
+  /* ---- Color: Surface / Glass ---- */
+  --color-glass-bg: rgba(18, 20, 32, 0.55);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-glass-highlight: rgba(255, 255, 255, 0.04);
 
-  /* ---------- Warna teks ---------- */
-  --text-primary: #f5f5fb;
-  --text-secondary: #b9b9c9;
-  --text-muted: #74748a;
+  /* ---- Color: Text ---- */
+  --color-text-primary: #f2f3f7;
+  --color-text-secondary: #a6acc0;
+  --color-text-muted: #5b6178;
 
-  /* ---------- Glassmorphism ---------- */
-  --glass-bg: rgba(255, 255, 255, 0.04);
-  --glass-bg-strong: rgba(255, 255, 255, 0.07);
-  --glass-border: rgba(255, 255, 255, 0.09);
-  --glass-blur: 14px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  /* ---- Color: Accent ---- */
+  --color-accent-primary: #5b8cff;
+  --color-accent-secondary: #8a5bff;
+  --color-accent-glow: rgba(91, 140, 255, 0.45);
+  --color-accent-success: #4adba0;
+  --color-accent-warning: #ffb454;
+  --color-accent-danger: #ff5b6e;
 
-  /* ---------- Tipografi ---------- */
-  --font-display: 'Space Grotesk', 'Helvetica Neue', sans-serif; /* judul / identitas */
-  --font-body: 'Inter', 'Helvetica Neue', sans-serif;            /* teks isi */
-  --font-mono: 'JetBrains Mono', 'Courier New', monospace;       /* label utilitas / koordinat */
+  /* ---- Typography ---- */
+  --font-display: "Space Grotesk", "Segoe UI", sans-serif;
+  --font-body: "Inter", "Segoe UI", sans-serif;
 
-  --fs-hero: clamp(3.5rem, 12vw, 9rem);
-  --fs-h2: clamp(2.25rem, 5.5vw, 3.75rem);
-  --fs-body: 1rem;
-  --fs-small: 0.8rem;
-  --fs-micro: 0.68rem;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.75rem;
+  --fs-xxl: 2.5rem;
 
-  --tracking-tight: -0.02em;
-  --tracking-wide: 0.28em;
+  /* ---- Spacing scale ---- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-xxl: 64px;
 
-  /* ---------- Spacing scale ---------- */
-  --space-xs: 0.5rem;
-  --space-sm: 1rem;
-  --space-md: 1.75rem;
-  --space-lg: 3rem;
-  --space-xl: 5rem;
-  --space-2xl: 8rem;
+  /* ---- Radius ---- */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
 
-  /* ---------- Radius & border ---------- */
-  --radius-sm: 8px;
-  --radius-md: 16px;
-  --radius-lg: 28px;
-  --radius-pill: 999px;
+  /* ---- Shadow / Glow ---- */
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 24px var(--color-accent-glow);
 
-  /* ---------- Motion / easing ---------- */
-  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 0.25s;
-  --dur-medium: 0.6s;
-  --dur-slow: 1.2s;
+  /* ---- Blur ---- */
+  --blur-glass: 18px;
 
-  /* ---------- Z-index layers ---------- */
+  /* ---- Transition ---- */
+  --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 600ms;
+
+  /* ---- Z-index scale ---- */
   --z-canvas: 0;
-  --z-noise: 1;
-  --z-content: 10;
-  --z-nav: 50;
-  --z-overlay: 100;
+  --z-focus: 15;
+  --z-hud: 10;
+  --z-topbar: 20;
+  --z-sidebar: 30;
+  --z-loading: 100;
 }

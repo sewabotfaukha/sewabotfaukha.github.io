@@ -1,150 +1,111 @@
 /* ==========================================================================
-   NEXUS — Responsive
-   Breakpoint: Desktop (default) → Tablet (≤1024px) → Mobile (≤600px)
+   RESPONSIVE — Breakpoint adjustments
    ========================================================================== */
 
-/* ---------- Tablet ---------- */
+/* ---- Tablet ---- */
 @media (max-width: 1024px) {
-  .nexus-nav {
-    padding: var(--space-sm) var(--space-md);
+  #hero-title {
+    font-size: clamp(2.8rem, 11vw, 6.5rem);
   }
 
-  .hero__panel {
-    max-width: 560px;
-    padding: var(--space-xl) var(--space-md);
+  #sidebar {
+    width: min(340px, 88vw);
   }
 
-  .hero__ring {
-    width: min(85vw, 560px);
-    height: min(85vw, 560px);
-  }
-
-  .about__grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-    text-align: center;
-  }
-
-  .about__content {
-    align-items: center;
-    text-align: center;
-  }
-
-  .about__buttons {
-    justify-content: center;
-  }
-
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .cursor-glow {
-    display: none; /* efek dekoratif halus dimatikan di layar sentuh/tablet demi performa */
-  }
-
-  /* FIX (5.6): blur 60px pada dua blob besar cukup berat di GPU tablet — turunkan tanpa menghilangkan efeknya. */
-  .about__blob {
-    filter: blur(38px);
+  #minimap {
+    width: 130px;
+    height: 130px;
   }
 }
 
-/* ---------- Mobile ---------- */
-@media (max-width: 600px) {
-  .nexus-nav {
-    padding: var(--space-sm);
-  }
-
-  .nexus-nav__coords {
-    display: none; /* sembunyikan koordinat dekoratif di layar sempit */
-  }
-
-  .hero {
+/* ---- Mobile ---- */
+@media (max-width: 640px) {
+  #hero-content {
+    gap: var(--space-sm);
     padding: var(--space-md);
   }
 
-  .hero__panel {
-    padding: var(--space-lg) var(--space-md);
+  #hero-kicker {
+    letter-spacing: 0.22em;
+    font-size: 10px;
+  }
+
+  #hero-title {
+    font-size: clamp(2.6rem, 16vw, 4.5rem);
+  }
+
+  #hero-subtitle {
+    font-size: 0.85rem;
+    padding: 0 var(--space-sm);
+  }
+
+  #hero-cta {
+    margin-top: var(--space-lg);
+    padding: 14px 36px;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+  }
+
+  #hero-scroll-hint {
+    bottom: var(--space-lg);
+  }
+
+  #topbar {
+    flex-wrap: wrap;
     gap: var(--space-sm);
-    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-md);
   }
 
-  .hero__title {
-    font-size: clamp(2.75rem, 16vw, 4rem);
+  #brand-name {
+    font-size: var(--fs-sm);
   }
 
-  .hero__subtitle {
-    font-size: 0.95rem;
+  #search-container {
+    order: 3;
+    width: 100%;
+    max-width: none;
   }
 
-  .hero__scroll-hint {
+  /* Sidebar mobile (bottom sheet) — shape handled in layout.css */
+  .sidebar-logo-premium {
+    width: 50px;
+    height: 50px;
+  }
+
+  .sidebar-title-premium {
+    font-size: var(--fs-md);
+  }
+
+  /* Legacy galaxy swatch */
+  .sidebar-logo,
+  .sidebar-galaxy-swatch {
+    width: 44px;
+    height: 44px;
+  }
+
+  .sidebar-title {
+    font-size: var(--fs-md);
+  }
+
+  #planet-tooltip {
+    display: none; /* hover tooltips don't apply on touch devices */
+  }
+
+  #minimap {
+    width: 96px;
+    height: 96px;
     bottom: var(--space-md);
+    right: var(--space-md);
   }
 
-  .btn {
-    width: 100%;
-    justify-content: center;
+  #hud {
+    font-size: 10px;
+    bottom: var(--space-md);
+    left: var(--space-md);
   }
 
-  .about {
-    padding: var(--space-xl) var(--space-md);
-  }
-
-  .about__title {
-    font-size: clamp(1.9rem, 8vw, 2.4rem);
-  }
-
-  .about__buttons {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .about__buttons .btn {
-    width: 100%;
-  }
-
-  .stat-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--space-xs);
-  }
-
-  .stat-card {
-    padding: var(--space-sm);
-  }
-
-  .about__blob {
-    display: none; /* jaga performa di layar kecil */
-  }
-
-  .about__bg-label,
-  .floating-el {
-    display: none; /* dekorasi murni, dimatikan di layar kecil demi performa & kerapian */
-  }
-
-  /* ============================================================
-     FIX (5.6) — Performance pass: backdrop-filter (blur) adalah salah
-     satu operasi paling mahal untuk GPU mobile, apalagi dua panel besar
-     (hero__panel & about__card) yang terus aktif selama scroll. Diperkecil
-     signifikan di HP, bukan dihilangkan (desain glass tetap terasa).
-     ============================================================ */
-  .hero__panel,
-  .about__card {
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
-    box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.4);
-  }
-
-  .about__card::after {
-    display: none; /* gradient border mask: repaint mahal, dampak visual minim di layar kecil */
-  }
-}
-
-/* ---------- Layar sangat kecil ---------- */
-@media (max-width: 360px) {
-  .hero__title {
-    font-size: 2.25rem;
-  }
-
-  .hero__panel {
-    padding: var(--space-md) var(--space-sm);
+  #loading-title {
+    font-size: var(--fs-lg);
+    letter-spacing: 0.15em;
   }
 }

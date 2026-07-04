@@ -1,364 +1,172 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NEXUS — Interactive 3D Developer Portfolio</title>
-  <meta name="description" content="NEXUS — Interactive 3D Developer Portfolio dibangun dengan Three.js & GSAP." />
-  <link rel="icon" type="image/svg+xml" href="assets/images/favicon.svg" />
+  <title>Internet Map — Explore the Web as a Universe</title>
+  <meta name="description" content="Internet Map visualizes the internet as a 3D universe of interconnected websites." />
 
-  <!-- ============ Fonts ============ -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
-    rel="stylesheet"
-  />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
-  <!-- ============ Critical CSS (fallback) ============ -->
-  <!-- Lapisan pertahanan pertama & PALING PENTING: mendefinisikan seluruh
-       design token (:root variables) langsung inline, SEBELUM file CSS
-       eksternal (variables.css dkk) sempat dimuat.
-
-       FIX (5.6.1) — ROOT CAUSE dari bug "teks invisible" di production/GitHub
-       Pages: hampir semua selector di layout.css memakai var(--warna-dsb)
-       TANPA fallback (contoh: `.hero__title` pakai teknik gradient-text
-       `color:transparent` + `background-clip:text` dengan `var(--text-primary)`
-       tanpa fallback). Di localhost, file CSS biasanya sempat termuat duluan
-       sebelum browser sempat render teks, jadi bug ini tidak kelihatan. Tapi
-       di hosting statis seperti GitHub Pages, urutan/timing load resource
-       BISA berbeda (CDN, cache, race condition beberapa <link> paralel) —
-       begitu variables.css belum aktif saat teks pertama kali di-paint,
-       SEMUA var(--...) yang tidak punya fallback jadi invalid, dan untuk
-       .hero__title ini artinya: background gradient invalid (dianggap tidak
-       ada) + color:transparent (hardcode) = TEKS BENAR-BENAR HILANG. Ini
-       berlaku untuk hampir semua teks/tombol di seluruh halaman, bukan cuma
-       judul "NEXUS" — makanya tombol Start Exploring & teks About juga ikut
-       kena.
-
-       Perbaikan permanen: definisikan token yang sama persis di sini (inline,
-       selalu tersedia dari detik pertama, tidak mungkin gagal load karena ini
-       bagian dari dokumen HTML itu sendiri). variables.css tetap tetap di-load
-       seperti biasa dan akan meng-override dengan nilai IDENTIK begitu aktif —
-       jadi tidak ada perubahan visual apa pun, ini murni lapisan pengaman. -->
-  <style>
-    :root {
-      --bg-void: #08080d;
-      --bg-elevated: #101018;
-      --bg-elevated-2: #16161f;
-      --accent-violet: #7c5cff;
-      --accent-violet-soft: rgba(124, 92, 255, 0.35);
-      --accent-cyan: #00e5ff;
-      --accent-cyan-soft: rgba(0, 229, 255, 0.25);
-      --accent-gradient: linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%);
-      --text-primary: #f5f5fb;
-      --text-secondary: #b9b9c9;
-      --text-muted: #74748a;
-      --glass-bg: rgba(255, 255, 255, 0.04);
-      --glass-bg-strong: rgba(255, 255, 255, 0.07);
-      --glass-border: rgba(255, 255, 255, 0.09);
-      --glass-blur: 14px;
-      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
-      --font-display: 'Space Grotesk', 'Helvetica Neue', sans-serif;
-      --font-body: 'Inter', 'Helvetica Neue', sans-serif;
-      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-      --fs-hero: clamp(3.5rem, 12vw, 9rem);
-      --fs-h2: clamp(2.25rem, 5.5vw, 3.75rem);
-      --fs-body: 1rem;
-      --fs-small: 0.8rem;
-      --fs-micro: 0.68rem;
-      --tracking-tight: -0.02em;
-      --tracking-wide: 0.28em;
-      --space-xs: 0.5rem;
-      --space-sm: 1rem;
-      --space-md: 1.75rem;
-      --space-lg: 3rem;
-      --space-xl: 5rem;
-      --space-2xl: 8rem;
-      --radius-sm: 8px;
-      --radius-md: 16px;
-      --radius-lg: 28px;
-      --radius-pill: 999px;
-      --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-      --dur-fast: 0.25s;
-      --dur-medium: 0.6s;
-      --dur-slow: 1.2s;
-      --z-canvas: 0;
-      --z-noise: 1;
-      --z-content: 10;
-      --z-nav: 50;
-      --z-overlay: 100;
-    }
-
-    html, body {
-      background-color: var(--bg-void);
-      color: var(--text-primary);
-      margin: 0;
-      min-height: 100vh;
-    }
-
-    /* Jaring pengaman KEDUA khusus untuk judul "NEXUS": kalau (karena alasan
-       apa pun) teknik gradient-text di layout.css tidak aktif tepat waktu,
-       aturan paling dasar ini menjamin teksnya tetap SOLID & TERLIHAT
-       (bukan transparent) sejak elemen pertama kali di-paint. layout.css
-       akan meng-override dengan versi gradient begitu aktif — tidak ada
-       downgrade visual, cuma lapisan aman tambahan. -->
-    .hero__title {
-      color: var(--text-primary);
-    }
-  </style>
-
-  <!-- ============ Stylesheet ============ -->
-  <!-- Di-load sebagai <link> terpisah (bukan @import berantai di dalam
-       style.css) supaya browser bisa mengambil semua file secara paralel
-       dan lebih tahan terhadap kegagalan satu file di hosting statis
-       seperti GitHub Pages. Urutan ini WAJIB dijaga. -->
-  <!-- FIX (5.6.2) — cache-busting: GitHub Pages/CDN & browser cache sering
-       menyajikan versi file lama kalau nama file tidak berubah antar deploy,
-       walau kode sumbernya sudah benar-benar diperbaiki. Query string ?v=
-       memaksa browser mengambil ulang file yang benar-benar terbaru. -->
-  <link rel="stylesheet" href="assets/css/variables.css?v=5.6.3" />
-  <link rel="stylesheet" href="assets/css/style.css?v=5.6.3" />
-  <link rel="stylesheet" href="assets/css/layout.css?v=5.6.3" />
-  <link rel="stylesheet" href="assets/css/animation.css?v=5.6.3" />
-  <link rel="stylesheet" href="assets/css/responsive.css?v=5.6.3" />
-
-  <!-- ============ Import Map: Three.js & GSAP via CDN (tanpa build tools) ============ -->
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
-        "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js",
-        "gsap/ScrollTrigger": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/ScrollTrigger.js",
-        "lenis": "https://cdn.jsdelivr.net/npm/lenis@1.1.14/+esm"
-      }
-    }
-  </script>
+  <!-- Stylesheets (order matters: variables -> reset/layout -> glass -> animation -> hero -> responsive) -->
+  <link rel="stylesheet" href="assets/css/variables.css" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="stylesheet" href="assets/css/layout.css" />
+  <link rel="stylesheet" href="assets/css/glass.css" />
+  <link rel="stylesheet" href="assets/css/animation.css" />
+  <link rel="stylesheet" href="assets/css/hero.css" />
+  <link rel="stylesheet" href="assets/css/responsive.css" />
 </head>
 <body>
 
-  <!-- ============ Loading Screen ============ -->
-  <div class="nexus-loader" role="status" aria-live="polite">
-    <span class="nexus-loader__mark">NEXUS · LOADING</span>
-    <div class="nexus-loader__bar" aria-hidden="true">
-      <div class="nexus-loader__bar-fill"></div>
-    </div>
-  </div>
-
-  <!-- ============ Canvas Three.js (latar belakang scene) ============ -->
-  <canvas id="nexus-canvas" aria-hidden="true"></canvas>
-
-  <!-- ============ Lapisan noise/grain dekoratif ============ -->
-  <div class="noise-overlay" aria-hidden="true"></div>
-
-  <!-- ============ Cursor glow (mengikuti mouse) ============ -->
-  <div class="cursor-glow" aria-hidden="true"></div>
-
-  <!-- ============ Navigasi minimal ============ -->
-  <nav class="nexus-nav">
-    <span class="nexus-nav__logo">Nexus</span>
-    <span class="nexus-nav__coords" data-coords>X 00 · Y 00</span>
-  </nav>
-
-  <!-- ============ Hero Section ============ -->
-  <main class="hero">
-    <!-- Cincin dekoratif — motif orbit, merujuk pada OrbitControls & tema 3D -->
-    <svg class="hero__ring" viewBox="0 0 200 200" aria-hidden="true">
-      <circle cx="100" cy="100" r="98" fill="none" stroke="url(#ringGradient)" stroke-width="0.5" stroke-dasharray="1 6" />
-      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#ringGradient)" stroke-width="0.5" opacity="0.4" />
-      <defs>
-        <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#7c5cff" />
-          <stop offset="100%" stop-color="#00e5ff" />
-        </linearGradient>
-      </defs>
-    </svg>
-
-    <!-- Elemen kecil melayang — glow dot & small ring -->
-    <span class="floating-el floating-el--dot" style="top: 22%; left: 12%;" aria-hidden="true"></span>
-    <span class="floating-el floating-el--ring" style="top: 68%; left: 85%;" aria-hidden="true"></span>
-    <span class="floating-el floating-el--hex" style="top: 78%; left: 15%;" aria-hidden="true"></span>
-
-    <div class="hero__panel">
-      <span class="hero__eyebrow">Interactive Portfolio</span>
-
-      <h1 class="hero__title">NEXUS</h1>
-
-      <p class="hero__subtitle">Interactive 3D Developer Portfolio</p>
-
-      <span class="hero__axis">X <span>·</span> Y <span>·</span> Z — spatial by design</span>
-
-      <button class="btn" data-action="explore" type="button">
-        <span>Start Exploring</span>
-        <span class="btn__arrow" aria-hidden="true">→</span>
-      </button>
-    </div>
-
-    <div class="hero__scroll-hint" aria-hidden="true">
-      <span>Scroll</span>
-      <span class="hero__scroll-line"></span>
-    </div>
-  </main>
-
-  <!-- ============ About Section ============ -->
-  <section id="about" class="about">
-    <div class="about__bg" aria-hidden="true">
-      <span class="about__blob about__blob--a"></span>
-      <span class="about__blob about__blob--b"></span>
-    </div>
-
-    <span class="floating-el floating-el--dot" style="top: 10%; left: 6%;" aria-hidden="true"></span>
-    <span class="floating-el floating-el--hex" style="top: 85%; left: 92%;" aria-hidden="true"></span>
-
-    <div class="about__grid">
-      <div class="about__content">
-        <span class="about__eyebrow">About</span>
-        <h2 class="about__title">Building interactive<br />digital experiences.</h2>
-        <p class="about__role">Interactive Developer Portfolio</p>
-        <p class="about__desc">
-          Merancang dan membangun pengalaman web interaktif berbasis 3D —
-          memadukan presisi teknik dengan sensasi visual yang premium,
-          detail demi detail.
-        </p>
-
-        <p class="about__focus"><span>Fokus:</span> Interactive 3D · Motion Design · Frontend Architecture</p>
-
-        <ul class="tech-stack" aria-label="Tech stack">
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3l1.6 17L12 22l6.4-2L20 3H4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 8h8M8.6 12h6.8M9 16l3 1 3-1" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>HTML5</span>
-          </li>
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.2"/></svg>
-            <span>CSS3</span>
-          </li>
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><text x="7" y="16" font-size="9" fill="currentColor" font-family="monospace">JS</text></svg>
-            <span>JavaScript</span>
-          </li>
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12,3 21,8.5 21,15.5 12,21 3,15.5 3,8.5" fill="none" stroke="currentColor" stroke-width="1.3"/><line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="0.8"/></svg>
-            <span>Three.js</span>
-          </li>
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 4v10l-7 4-7-4V7l7-4z" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/></svg>
-            <span>GSAP</span>
-          </li>
-          <li class="tech-chip">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="7" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="17" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M7 8v8M8.6 6.8L15.2 11M8.6 17.2L15.2 13" stroke="currentColor" stroke-width="1.1"/></svg>
-            <span>Git</span>
-          </li>
-        </ul>
-
-        <div class="about__buttons">
-          <button class="btn btn--outline" data-action="download-cv" type="button">
-            <span>Download CV</span>
-            <span class="btn__arrow" aria-hidden="true">↓</span>
-          </button>
-          <button class="btn" data-action="view-projects" type="button">
-            <span>View Projects</span>
-            <span class="btn__arrow" aria-hidden="true">→</span>
-          </button>
-        </div>
+  <!-- ================= LOADING SCREEN ================= -->
+  <section id="loading-screen" aria-label="Loading">
+    <div id="loading-content">
+      <h1 id="loading-title">INTERNET MAP</h1>
+      <div id="loading-bar-track">
+        <div id="loading-bar-fill"></div>
       </div>
-
-      <div class="about__card" data-tilt>
-        <div class="about__card-glow" aria-hidden="true"></div>
-
-        <div class="about__avatar" aria-hidden="true">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.6" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 20c1.4-3.8 4.4-5.8 7.5-5.8s6.1 2 7.5 5.8" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </div>
-
-        <span class="about__card-eyebrow">Currently</span>
-        <h3 class="about__card-title">Available for select projects</h3>
-        <p class="about__card-text">
-          Fokus pada portfolio interaktif, micro-interaction, dan
-          pengalaman 3D di web.
-        </p>
-
-        <ul class="timeline">
-          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2023</span> Mulai membangun proyek frontend interaktif</li>
-          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2024</span> Fokus mendalami Three.js &amp; motion design</li>
-          <li><span class="timeline__dot" aria-hidden="true"></span><span class="timeline__year">2026</span> Merilis NEXUS — portfolio 3D interaktif</li>
-        </ul>
-
-        <div class="about__card-reflection" aria-hidden="true"></div>
-      </div>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-card">
-        <span class="stat-card__value">4+</span>
-        <span class="stat-card__label">Years Experience</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__value">30+</span>
-        <span class="stat-card__label">Projects</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__value">18</span>
-        <span class="stat-card__label">Technologies</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__value">520+</span>
-        <span class="stat-card__label">Coffee</span>
-      </div>
+      <p id="loading-status">Initializing universe...</p>
     </div>
   </section>
 
-  <!--
-    ============ Hierarki Section (Prompt 5.6 — Architecture Fix) ============
-    Satu halaman scroll tunggal, urutan WAJIB dijaga:
-      Hero  (di atas)
-        ↓
-      About (section ini, di atas)
-        ↓
-      Projects  ← akan ditambahkan pada Prompt 6, TEPAT setelah #about, SEBELUM script module di bawah.
-        ↓
-      Contact   ← akan ditambahkan setelah Projects.
-    Jangan pernah membuat section-section ini sebagai halaman terpisah (routing/multi-page) —
-    seluruh cinematic transition (Hero→About, kamera, dsb) dibangun dengan asumsi
-    satu dokumen scroll berkelanjutan.
-  -->
+  <!-- ================= HERO LANDING (AAA game-intro style) ================= -->
+  <section id="hero-landing" aria-label="Internet Map introduction">
 
-  <!-- ============ Entry Point JavaScript (ES Module) ============ -->
-  <script type="module" src="assets/js/main.js?v=5.6.3"></script>
+    <!-- Layered deep-space background -->
+    <div id="hero-bg">
+      <div id="hero-bg-gradient"></div>
+      <canvas id="hero-stars-canvas" aria-hidden="true"></canvas>
+      <div id="hero-nebula-1" class="hero-nebula" aria-hidden="true"></div>
+      <div id="hero-nebula-2" class="hero-nebula" aria-hidden="true"></div>
+      <div id="hero-glow-core" aria-hidden="true"></div>
+      <div id="hero-noise" aria-hidden="true"></div>
+      <div id="hero-vignette" aria-hidden="true"></div>
+    </div>
 
-  <!--
-    ============ Visibility Watchdog (Prompt 5.6.1) ============
-    Sengaja BUKAN type="module" dan TIDAK mengimpor apa pun — supaya tetap
-    berjalan walau main.js gagal total (misal salah satu CDN di importmap
-    gagal/lambat dimuat). Satu-satunya tugas script ini: menjamin konten inti
-    (judul, tombol Explore, teks About) TIDAK PERNAH tersangkut di opacity
-    mendekati 0 kalau animasi intro/reveal gagal selesai karena alasan apa pun.
-    Tidak memakai !important & tidak menyentuh transform, supaya kalau animasi
-    scroll (Hero fade saat discroll ke About) sedang sah berjalan, ini tidak
-    mengganggunya — begitu discroll lagi, GSAP scrub akan langsung menimpa
-    balik dengan nilai yang benar.
-  -->
-  <script>
-    window.addEventListener('load', function () {
-      setTimeout(function () {
-        var criticalSelectors = [
-          '.hero__panel', '.hero__eyebrow', '.hero__title', '.hero__subtitle',
-          '.hero__axis', '.hero .btn',
-          '.about__eyebrow', '.about__title', '.about__role', '.about__desc',
-          '.about__focus', '.tech-stack', '.about__buttons .btn',
-          '.about__card', '.stat-card'
-        ];
-        criticalSelectors.forEach(function (sel) {
-          document.querySelectorAll(sel).forEach(function (el) {
-            var op = parseFloat(getComputedStyle(el).opacity);
-            if (isNaN(op) || op < 0.5) {
-              el.style.opacity = '1';
-              el.style.filter = 'none';
-            }
-          });
-        });
-      }, 2500);
-    });
+    <!-- Foreground content -->
+    <div id="hero-content">
+      <p id="hero-kicker">A PREMIUM 3D EXPERIENCE</p>
+      <h1 id="hero-title">
+        <span class="hero-title-line" data-text="INTERNET">INTERNET</span>
+        <span class="hero-title-line" data-text="MAP">MAP</span>
+      </h1>
+      <p id="hero-subtitle">Explore the Internet Like Never Before</p>
+
+      <button id="hero-cta" type="button">
+        <span id="hero-cta-label">START EXPLORING</span>
+        <span id="hero-cta-glow" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div id="hero-scroll-hint" aria-hidden="true">
+      <span id="hero-scroll-dot"></span>
+    </div>
+
+  </section>
+
+  <!-- ================= LANDING / APP CONTAINER ================= -->
+  <main id="landing-container" aria-hidden="true">
+
+    <!-- Three.js render target -->
+    <canvas id="scene-canvas" aria-label="3D internet universe canvas"></canvas>
+
+    <!-- Focus Mode overlay (Phase 9) — soft blur + vignette behind the
+         focused planet's UI, toggled via .is-active by ui.js -->
+    <div id="focus-blur-overlay" aria-hidden="true"></div>
+
+    <!-- Focus Mode persistent label (Phase 9) — name / category / owner
+         stay visible while a planet is focused, independent of the sidebar -->
+    <div id="focus-label" hidden>
+      <span id="focus-label-name"></span>
+      <span id="focus-label-meta">
+        <span id="focus-label-category"></span>
+        <span id="focus-label-dot">•</span>
+        <span id="focus-label-owner"></span>
+      </span>
+    </div>
+
+    <!-- Top bar: search -->
+    <header id="topbar">
+      <div id="brand">
+        <span id="brand-mark">●</span>
+        <span id="brand-name">Internet Map</span>
+      </div>
+
+      <div id="search-container" role="search">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="Search a website, domain, or category..."
+          autocomplete="off"
+        />
+        <div id="search-results" hidden></div>
+      </div>
+
+      <button id="audio-toggle" aria-label="Toggle ambient audio" aria-pressed="false">
+        <span id="audio-icon">🔈</span>
+      </button>
+    </header>
+
+    <!-- Sidebar: website details panel — slides in from the right when a
+         planet is clicked (wired in ui.js's showPlanetSidebar) -->
+    <aside id="sidebar" aria-label="Website details" hidden>
+      <div id="sidebar-content">
+        <!-- Populated dynamically by ui.js when a planet/galaxy is selected -->
+        <!-- The close button is injected into the header by showPlanetSidebar / showGalaxySidebar -->
+      </div>
+    </aside>
+
+    <!-- Planet hover tooltip — follows the mouse, shows logo/name/category/visitors -->
+    <div id="planet-tooltip" role="tooltip" hidden>
+      <div id="tooltip-logo-wrap">
+        <img id="tooltip-logo-img" src="" alt="" aria-hidden="true" />
+        <span id="tooltip-logo-fallback" aria-hidden="true"></span>
+        <span id="tooltip-color-dot" aria-hidden="true"></span>
+      </div>
+      <div id="tooltip-body">
+        <span id="tooltip-name"></span>
+        <span id="tooltip-meta">
+          <span id="tooltip-category"></span>
+          <span id="tooltip-dot">•</span>
+          <span id="tooltip-visitors"></span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Hyperlane hover tooltip (Phase 10) — "Source ➜ Target" label -->
+    <div id="hyperlane-tooltip" role="tooltip" hidden>
+      <span id="hyperlane-tooltip-label"></span>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap" aria-label="Universe minimap">
+      <canvas id="minimap-canvas"></canvas>
+    </div>
+
+    <!-- Bottom-left status / HUD -->
+    <div id="hud">
+      <span id="hud-coords">x: 0.00, y: 0.00, z: 0.00</span>
+      <span id="hud-fps">FPS: --</span>
+    </div>
+
+  </main>
+
+  <!-- ================= JS ENTRY POINT ================= -->
+  <!-- Three.js & GSAP via CDN, exposed as ES modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "gsap": "https://cdn.jsdelivr.net/npm/gsap@3.12.5/index.js"
+    }
+  }
   </script>
+  <script type="module" src="assets/js/hero.js"></script>
+  <script type="module" src="assets/js/main.js"></script>
 </body>
 </html>

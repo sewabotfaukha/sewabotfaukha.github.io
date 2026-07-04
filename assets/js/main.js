@@ -1,202 +1,183 @@
-// ============================================================================
-// NEXUS — main.js
-// Entry point. Scene + hero object + lighting + background + camera rig +
-// bloom composer + smooth scroll + transisi cinematic Hero→About, SEMUA
-// dalam satu render loop (requestAnimationFrame).
-// ============================================================================
+// ==========================================================================
+// main.js — Application entry point
+// Connects: loader -> scene (space + galaxy system + planet engine) ->
+//           camera -> renderer -> controls -> postprocessing (bloom) -> ui
+// ==========================================================================
 
-import * as THREE from 'three';
+import * as THREE from "three";
+import { $ } from "./utils.js";
+import { runLoadingSequence, hideLoadingScreen } from "./loader.js";
+import { createScene } from "./scene.js";
+import { createCamera, updateCameraAspect, flyToGalaxy, flyToPlanet } from "./camera.js";
+import { createRenderer, resizeRenderer } from "./renderer.js";
+import { createControls } from "./controls.js";
+import { createComposer, resizeComposer } from "./postprocessing.js";
+import { initUI, updateHUD, handlePlanetHover, handlePlanetClick } from "./ui.js";
+import { createHyperlaneNetwork } from "./hyperlane.js";
 
-// FIX (5.6.2) — cache-busting: query string ?v= pada tiap import lokal supaya
-// browser tidak diam-diam memakai versi file .js lama dari cache setelah deploy baru.
-import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js?v=5.6.3';
-import { createCamera, updateCameraOnResize } from './camera.js?v=5.6.3';
-import { createCameraRig } from './controls.js?v=5.6.3';
-import { createLoadingManager } from './loader.js?v=5.6.3';
-import {
-  configureGsapDefaults,
-  playIntroTimeline,
-  initCardParallax,
-  initTiltCard,
-  initAboutReveal,
-  initSmoothScroll,
-  initSectionTransition,
-  initHeroScrollTransition,
-  scrollToSelector,
-  cameraFlyBump,
-} from './animation.js?v=5.6.3';
-import { initUI, hideLoader, setLoaderProgress } from './ui.js?v=5.6.3';
-import { initEffects } from './effects.js?v=5.6.3';
+/** Application state shared across the render loop */
+const state = {
+  scene: null,
+  camera: null,
+  renderer: null,
+  controls: null,
+  composer: null,
+  websites: [],
+  connections: [],
+  hyperlaneNetwork: null,
+};
 
-function bootstrap() {
-  const canvas = document.querySelector('#nexus-canvas');
-  if (!canvas) {
-    console.error('[NEXUS] #nexus-canvas tidak ditemukan. Setup 3D dilewati.');
-    safeInitNonThreeParts();
-    return;
-  }
+const clock = new THREE.Clock();
 
-  let renderer;
-  try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  } catch (err) {
-    console.error('[NEXUS] WebGLRenderer gagal dibuat:', err);
-    safeInitNonThreeParts();
-    return;
-  }
+let lastFrameTime = performance.now();
+let frameCount = 0;
+let fps = 0;
 
-  const isMobile = window.innerWidth < 768;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+async function bootstrap() {
+  // 1. Load data + drive the loading screen progress bar
+  const { websites, connections } = await runLoadingSequence();
+  state.websites = websites;
+  state.connections = connections;
 
-  const scene = createScene();
-  const camera = createCamera(window.innerWidth / window.innerHeight);
-  const rig = createCameraRig(camera);
+  // 2. Build the Three.js core: scene, camera, renderer, controls, bloom
+  const canvas = $("scene-canvas");
+  state.camera = createCamera();
+  // createScene is async: loads galaxies.json + websites.json, and wires
+  // PlanetManager's hover/click raycasting to this camera + canvas. Hover
+  // shows the tooltip; click opens the sidebar — both handled in ui.js.
+  state.scene = await createScene(state.camera, canvas, {
+    onHover: handlePlanetHover,
+    onClick: handlePlanetClick,
+  });
+  state.renderer = createRenderer(canvas);
+  state.controls = createControls(state.camera, state.renderer.domElement);
+  state.composer = createComposer(state.renderer, state.scene, state.camera);
 
-  const { group: heroGroup } = createHeroObject();
-  scene.add(heroGroup);
+  // 3b. Build the Hyperlane Network (Phase 10) — curved glowing lanes
+  //     between connected websites, loaded entirely from connections.json.
+  //     Added to the scene AFTER PlanetManager so getPlanetById() resolves.
+  state.hyperlaneNetwork = await createHyperlaneNetwork({
+    planetManager: state.scene.userData.planetManager,
+    camera: state.camera,
+    domElement: canvas,
+    onHover: (lane, event) => {
+      if (lane) {
+        showHyperlaneTooltip(lane, event);
+        canvas.style.cursor = "pointer";
+      } else {
+        hideHyperlaneTooltip();
+      }
+    },
+  });
+  state.scene.add(state.hyperlaneNetwork.group);
+  state.scene.userData.hyperlaneNetwork = state.hyperlaneNetwork;
 
-  const { pointViolet, rimCyan } = createLighting(scene);
-
-  const stars = createStarfield(isMobile ? 160 : 380);
-  const particles = createAmbientParticles(isMobile ? 20 : 50);
-  const nebula = createNebulaBackdrop(isMobile);
-  const softShadow = createSoftShadow();
-  scene.add(nebula, stars, particles, softShadow);
-  applyEnvironmentReflection(renderer, scene);
-
-  createLoadingManager({ onLoad: () => hideLoader() });
-
-  // Belum ada aset berat (texture/model) untuk dimuat pada tahap ini, jadi progress
-  // disimulasikan singkat agar loading screen tetap terasa premium & tidak blank.
-  setLoaderProgress(35);
-  requestAnimationFrame(() => setLoaderProgress(75));
-  window.setTimeout(() => setLoaderProgress(100), 260);
-  hideLoader(420);
-
-  const { composer, resize: resizeEffects } = initEffects({ scene, camera, renderer });
-
-  // -- Resize ----------------------------------------------------------------
-  // FIX (5.6): di-throttle lewat rAF (bukan langsung per event resize) — resize
-  // event bisa menembak sangat sering (terutama drag resize window / rotate HP),
-  // dan setiap panggilan menyentuh renderer + composer (operasi berat). Dengan
-  // rAF-throttle, DOM/GPU update maksimal sekali per frame render, bukan setiap
-  // event resize mentah.
-  let resizeScheduled = false;
-  function onResize() {
-    if (resizeScheduled) return;
-    resizeScheduled = true;
-    requestAnimationFrame(() => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      updateCameraOnResize(camera, w, h);
-      renderer.setSize(w, h);
-      resizeEffects(w, h);
-      resizeScheduled = false;
-    });
-  }
-  window.addEventListener('resize', onResize, { passive: true });
-
-  // -- Fly-bump kamera + scroll otomatis ke About saat tombol Explore diklik --
-  window.addEventListener('nexus:explore', () => {
-    cameraFlyBump(camera, rig.state);
-    scrollToSelector('#about');
+  // 3. Wire up DOM UI (search, sidebar, audio toggle) — pass the galaxy
+  // list + a visit() callback so ui.js can let the user travel to a galaxy
+  // (e.g. selecting one from search results) without main.js knowing about
+  // DOM specifics, and without ui.js knowing about Three.js internals.
+  initUI({
+    galaxies: state.scene.userData.galaxies,
+    websites: state.websites,
+    planetManager: state.scene.userData.planetManager,
+    galaxySystem: state.scene.userData.galaxySystem,
+    hyperlaneNetwork: state.hyperlaneNetwork,
+    visitGalaxy: (galaxy) =>
+      flyToGalaxy(state.camera, state.controls, galaxy),
+    visitPlanet: (planet, options) =>
+      flyToPlanet(state.camera, state.controls, planet, options),
   });
 
-  // -- Transisi cinematic Hero → About (di-drive oleh scroll, via Lenis+ScrollTrigger) --
-  let scrollProgress = 0;
-  initSectionTransition((p) => {
-    scrollProgress = p;
-  });
+  // 4. Start rendering immediately (scene exists behind the hero landing)
+  window.addEventListener("resize", onResize);
+  requestAnimationFrame(animate);
 
-  // -- Animation loop (satu-satunya rAF loop di project ini) ---------------
-  const clock = new THREE.Clock();
-  let tiltX = 0;
-  let tiltY = 0;
-  let rotY = 0;
-  const baseScale = heroGroup.scale.x;
-  const baseViolet = pointViolet.intensity;
-  const baseRim = rimCyan.intensity;
+  // 5. Reveal the premium hero landing once data is ready
+  hideLoadingScreen();
 
-  function animate() {
-    requestAnimationFrame(animate);
+  // 6. When the user clicks "START EXPLORING" in hero.js, reveal the app UI
+  document.addEventListener("hero-cta-clicked", revealApp, { once: true });
 
-    // FIX (5.6): kalau tab sedang tidak aktif/terlihat, skip kerja berat (render
-    // composer) — browser tetap memanggil rAF tapi kita tidak perlu ikut membakar
-    // GPU/CPU di background. State tetap diupdate ringan supaya begitu tab aktif
-    // lagi transisinya tidak "meloncat".
-    if (document.hidden) return;
+  console.log(
+    `[main] Internet Map foundation ready — ${state.websites.length} websites, ${state.connections.length} connections loaded.`
+  );
+}
 
-    const elapsed = clock.getElapsedTime();
-
-    // Scroll → camera turun cinematic, object mengecil & bergeser, lighting berubah.
-    // FIX (5.6): scrollY di-lerp (bukan di-snap langsung) menuju target dari
-    // ScrollTrigger. ScrollTrigger.scrub sudah men-smoothing progress-nya sendiri,
-    // tapi lerp tambahan ini meredam micro-jitter antar frame sehingga kamera
-    // benar-benar tidak pernah "teleport" walau progress berubah cepat (misal
-    // saat scroll-to terprogram lewat tombol Explore).
-    const targetScrollY = -scrollProgress * 1.6;
-    rig.state.scrollY = THREE.MathUtils.lerp(rig.state.scrollY, targetScrollY, 0.09);
-    const targetScale = baseScale * (1 - scrollProgress * 0.4);
-    heroGroup.scale.setScalar(THREE.MathUtils.lerp(heroGroup.scale.x, targetScale, 0.08));
-    heroGroup.position.x = THREE.MathUtils.lerp(heroGroup.position.x, scrollProgress * 1.1, 0.08);
-    pointViolet.intensity = THREE.MathUtils.lerp(pointViolet.intensity, baseViolet * (1 - scrollProgress * 0.5), 0.08);
-    rimCyan.intensity = THREE.MathUtils.lerp(rimCyan.intensity, baseRim * (1 + scrollProgress * 0.8), 0.08);
-
-    rig.update(elapsed);
-
-    // Object: melayang perlahan + rotasi sangat pelan + sedikit mengikuti mouse.
-    rotY += 0.0018;
-    tiltX += (rig.mouse.y * 0.18 - tiltX) * 0.04;
-    tiltY += (rig.mouse.x * 0.22 - tiltY) * 0.04;
-    heroGroup.position.y = Math.sin(elapsed * 0.6) * 0.16;
-    heroGroup.rotation.x = tiltX;
-    heroGroup.rotation.y = rotY + tiltY;
-
-    // Glow (point light violet) mengikuti posisi mouse — lebih pelan dari objek (parallax berlapis).
-    pointViolet.position.x = -1.5 + rig.mouse.x * 0.8;
-    pointViolet.position.y = 1 - rig.mouse.y * 0.6;
-
-    // Background hidup: rotasi sangat pelan + parallax sangat kecil mengikuti mouse.
-    stars.rotation.y = elapsed * 0.008;
-    stars.position.x = rig.mouse.x * 0.15;
-    stars.position.y = -rig.mouse.y * 0.1;
-    particles.rotation.y = -elapsed * 0.015;
-    particles.position.x = rig.mouse.x * 0.25;
-    particles.position.y = -rig.mouse.y * 0.18;
-    nebula.rotation.y = elapsed * 0.004;
-
-    composer.render();
+/** Reveal the app container (canvas UI, sidebar, HUD) after the hero intro */
+function revealApp() {
+  const landing = $("landing-container");
+  if (landing) {
+    landing.setAttribute("aria-hidden", "false");
+    landing.classList.add("is-fading-in");
   }
-
-  safeInitNonThreeParts();
-  animate();
 }
 
-function safeInitNonThreeParts() {
-  try { configureGsapDefaults(); } catch (err) { console.error('[NEXUS] GSAP defaults gagal:', err); }
-  try { initSmoothScroll(); } catch (err) { console.error('[NEXUS] Smooth scroll gagal:', err); }
-  try { initUI(); } catch (err) { console.error('[NEXUS] initUI gagal:', err); }
-  try {
-    playIntroTimeline(() => {
-      // Dipanggil setelah intro selesai — lihat catatan FIX (5.6.3) di animation.js
-      try { initHeroScrollTransition(); } catch (err) { console.error('[NEXUS] Hero scroll transition gagal:', err); }
-    });
-  } catch (err) { console.error('[NEXUS] Intro timeline gagal:', err); }
-  try { initCardParallax(); } catch (err) { console.error('[NEXUS] Card parallax gagal:', err); }
-  try { initTiltCard('.about__card'); } catch (err) { console.error('[NEXUS] Tilt card gagal:', err); }
-  try { initAboutReveal(); } catch (err) { console.error('[NEXUS] About reveal gagal:', err); }
-  hideLoader(800);
+function onResize() {
+  updateCameraAspect(state.camera);
+  resizeRenderer(state.renderer);
+  resizeComposer(state.composer);
 }
 
-window.addEventListener('error', (event) => {
-  console.error('[NEXUS] Unhandled error:', event.error || event.message);
-  hideLoader(0);
+function animate() {
+  requestAnimationFrame(animate);
+
+  const delta = clock.getDelta();
+  const elapsed = clock.getElapsedTime();
+
+  // Animate the living space environment (Milky Way drift, nebula shader
+  // time, shooting star launches, dynamic light color/intensity breathing)
+  state.scene.userData.spaceUpdate?.(delta, elapsed);
+
+  // Animate the galaxy system (per-galaxy rotation + glow pulse + label fade)
+  state.scene.userData.galaxyUpdate?.(delta, elapsed);
+
+  // Animate every planet (rotation, floating, glow pulse, cloud drift, moons)
+  state.scene.userData.planetUpdate?.(delta, elapsed);
+
+  // Animate hyperlane network (uniform uTime, smooth highlight/dim/hover lerp)
+  state.hyperlaneNetwork?.update(delta, elapsed);
+
+  state.controls.update(); // required every frame for damping/inertia to work
+  state.composer.render(); // renders scene through the bloom post-processing chain
+
+  trackFPS();
+  updateHUD(state.camera, fps);
+}
+
+/** Lightweight FPS counter sampled once per second */
+function trackFPS() {
+  frameCount += 1;
+  const now = performance.now();
+  const elapsed = now - lastFrameTime;
+
+  if (elapsed >= 1000) {
+    fps = Math.round((frameCount * 1000) / elapsed);
+    frameCount = 0;
+    lastFrameTime = now;
+  }
+}
+
+/** Show the hyperlane hover tooltip (Phase 10) — "Source ➜ Target" label */
+function showHyperlaneTooltip(lane, event) {
+  const tooltip = $("hyperlane-tooltip");
+  if (!tooltip) return;
+
+  const srcName = lane.sourcePlanet?.data?.name ?? lane.source;
+  const tgtName = lane.targetPlanet?.data?.name ?? lane.target;
+  $("hyperlane-tooltip-label").textContent = `${srcName} ➜ ${tgtName}`;
+
+  tooltip.hidden = false;
+  tooltip.style.left = `${event.clientX + 14}px`;
+  tooltip.style.top = `${event.clientY - 28}px`;
+}
+
+function hideHyperlaneTooltip() {
+  const tooltip = $("hyperlane-tooltip");
+  if (tooltip) tooltip.hidden = true;
+}
+
+bootstrap().catch((err) => {
+  console.error("[main] Fatal error during bootstrap:", err);
+  const status = $("loading-status");
+  if (status) status.textContent = "Something went wrong. Check console for details.";
 });
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', bootstrap);
-} else {
-  bootstrap();
-}

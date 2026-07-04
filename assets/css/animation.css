@@ -1,94 +1,54 @@
 /* ==========================================================================
-   NEXUS — CSS Animation
-   Keyframes & transisi ringan yang tidak perlu dikendalikan lewat GSAP.
-   Animasi utama/orkestrasi tetap dikerjakan lewat GSAP (lihat animation.js).
+   ANIMATION — Keyframes & lightweight transition utilities
+   (Foundation only — kept intentionally minimal for Phase 1)
    ========================================================================== */
 
-/* ---------- Denyut lembut pada indikator eyebrow ---------- */
-@keyframes nexus-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.hero__eyebrow::before {
-  animation: nexus-pulse 2.4s var(--ease-soft) infinite;
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
-/* ---------- Rotasi lambat cincin dekoratif hero ---------- */
-@keyframes nexus-spin-slow {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to   { transform: translate(-50%, -50%) rotate(360deg); }
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 var(--color-accent-glow); }
+  50% { box-shadow: 0 0 18px var(--color-accent-glow); }
 }
 
-.hero__ring {
-  animation: nexus-spin-slow 60s linear infinite;
+/* ---- Phase 9: search empty-state icon pulse ---- */
+@keyframes search-empty-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.12); opacity: 0.9; }
 }
 
-/* ---------- Gerak naik-turun indikator scroll ---------- */
-@keyframes nexus-bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
-  50%      { transform: translateX(-50%) translateY(8px); opacity: 1; }
+/* ---- Utility classes (toggled by JS) ---- */
+.is-hidden {
+  display: none !important;
 }
 
-.hero__scroll-hint {
-  animation: nexus-bounce 2.2s var(--ease-soft) infinite;
+.is-fading-in {
+  animation: fade-in var(--duration-base) var(--ease-default) forwards;
 }
 
-/* ---------- Floating decorative elements (glow dot / ring / hexagon) ---------- */
-@keyframes nexus-float-el {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(10px, -18px) rotate(8deg); }
+.is-fading-out {
+  animation: fade-out var(--duration-base) var(--ease-default) forwards;
 }
 
-/* ---------- Floating blur blob (background About) ---------- */
-@keyframes nexus-float-blob {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(30px, -24px) scale(1.08); }
+/* ---- Transition defaults for interactive elements ---- */
+#audio-toggle,
+#sidebar-close,
+#search-input {
+  transition: background-color var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
 }
 
-/* ---------- Ripple effect tombol (elemen dibuat dinamis via ui.js) ---------- */
-@keyframes nexus-ripple {
-  from {
-    transform: scale(0);
-    opacity: 0.55;
-  }
-  to {
-    transform: scale(22);
-    opacity: 0;
-  }
-}
-
-/* ---------- Transisi hover umum untuk elemen interaktif ---------- */
-a, button, .btn {
-  transition: transform var(--dur-fast) var(--ease-soft),
-              opacity var(--dur-fast) var(--ease-soft),
-              box-shadow var(--dur-fast) var(--ease-soft);
-}
-
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 22px -4px var(--accent-violet-soft); /* dipertajam & diperkecil radius (5.6): tetap glow, lebih ringan di GPU */
-}
-
-.btn:active {
-  transform: translateY(0);
-}
-
-/* ---------- Focus-visible (aksesibilitas + micro-interaction keyboard) ---------- */
-.btn:focus-visible,
-.nexus-nav__logo:focus-visible {
-  outline: 2px solid var(--accent-cyan);
-  outline-offset: 3px;
-}
-
-/* ---------- Hormati preferensi reduced motion ---------- */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Note: #sidebar's slide/fade transition is now driven entirely by GSAP
+   (see ui.js's openSidebar/closeSidebar) — no CSS transition here, since a
+   CSS transition on the same `transform` property GSAP animates would
+   double up and introduce lag. */
+#sidebar[hidden] {
+  display: none;
 }

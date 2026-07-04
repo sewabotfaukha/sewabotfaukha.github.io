@@ -1,180 +1,103 @@
-# NEXUS — Interactive 3D Developer Portfolio
+# Internet Map
 
-Portfolio premium berbasis **Three.js** dan **GSAP**, dibangun murni dengan
-HTML5, CSS3, dan JavaScript ES Modules — tanpa backend, tanpa framework,
-tanpa Node.js, dan tanpa build tools. Siap dijalankan langsung dari
-**GitHub Pages**.
+Internet Map is a premium web experience that visualizes the internet as a 3D universe — every website a celestial body, every link a connection in space.
 
-## Status
+This repository currently contains **Phase 1: the project foundation**. No planets, no large-scale visualization features yet — just a clean, professional, working base to build on.
 
-Ini adalah **fondasi project (Prompt 1)**: landing page premium dengan
-setup Three.js dasar (scene, camera, renderer, OrbitControls) dan
-konfigurasi GSAP awal. Belum ada object 3D atau animasi besar — struktur
-ini dirancang agar mudah dikembangkan pada prompt-prompt berikutnya.
+## Tech Stack
 
-### Prompt 5.6.1 — Critical Fix: Invisible Text di Production (GitHub Pages)
+- HTML5
+- CSS3 (with CSS variables, dark theme)
+- JavaScript ES6 Modules (native `import`/`export`, no bundler)
+- [Three.js](https://threejs.org/) — via CDN / import map
+- [GSAP](https://gsap.com/) — via CDN / import map
 
-Laporan: setelah deploy ke GitHub Pages, judul "NEXUS", tombol "Start
-Exploring", dan teks section About tidak muncul di Chrome — padahal normal
-saat ditest lokal. Setelah audit menyeluruh, ditemukan **tiga bug yang saling
-bertumpuk**, semuanya berakar dari asumsi bahwa file CSS/JS eksternal PASTI
-berhasil & tepat waktu dimuat — asumsi yang valid di localhost tapi tidak
-selalu valid di hosting statis (race condition CDN, cache, network):
+No Node.js, no build tools, no frameworks (React/Vue/Angular), no backend. The site runs by opening `index.html` directly, or via any static file host.
 
-1. **Gradient-text tanpa fallback.** `.hero__title` ("NEXUS") dan
-   `.stat-card__value` memakai teknik `color:transparent` +
-   `background-clip:text` dengan `var(--text-primary)`/`var(--accent-gradient)`
-   **tanpa nilai fallback**. Kalau `variables.css` belum aktif saat elemen
-   itu pertama kali di-render, `background` jadi invalid (dianggap tidak ada)
-   sementara `color:transparent` tetap berlaku apa adanya → teks benar-benar
-   transparan, tidak ada fallback warna apa pun.
-   **Fix:** semua `var()` kritis sekarang punya fallback eksplisit
-   (`var(--text-primary, #f5f5fb)`, dst), DAN seluruh design token
-   (`:root { --bg-void: ...; --text-primary: ...; dst }`) diduplikasi ke
-   `<style>` inline di `<head>` sehingga tersedia sejak dokumen pertama kali
-   di-parse — tidak mungkin lagi "belum aktif".
-2. **Loading screen bisa nyangkut selamanya.** `.nexus-loader` adalah overlay
-   full-screen (`position:fixed; inset:0`) yang HANYA disembunyikan lewat
-   `classList.add('is-hidden')` dari JS. Kalau salah satu CDN di import map
-   (three.js/GSAP/Lenis) gagal/lambat dimuat, `main.js` tidak pernah sempat
-   jalan, overlay ini tidak pernah disembunyikan, dan menutupi seluruh
-   Hero + About di baliknya — persis gejala "semua konten hilang".
-   **Fix:** ditambahkan CSS-only failsafe (`animation: ... 4s forwards`) yang
-   menjamin loader hilang sendiri setelah 4 detik apa pun yang terjadi pada JS.
-3. **Tidak ada jaring pengaman kalau animasi reveal gagal.** Ditambahkan
-   watchdog kecil (script biasa, bukan ES module, jadi tidak ikut gagal kalau
-   import CDN bermasalah) yang mengecek ulang opacity elemen-elemen kritis
-   2.5 detik setelah `load`, dan memaksa terlihat kalau ada yang tersangkut.
+## How to Run
 
-Ketiganya independen satu sama lain (defense-in-depth) — cukup satu yang
-bekerja untuk mencegah halaman terlihat kosong, apa pun penyebab pastinya di
-sisi hosting.
-
-### Prompt 5.6 — Architecture Fix (transisi antar-section)
-
-Fokus prompt ini murni perbaikan struktur/arsitektur, **tanpa fitur baru**,
-supaya fondasi benar-benar stabil sebelum Prompt 6 (halaman Projects):
-
-- **Start Exploring** tidak lagi memicu "camera bump" cepat (0.22s) yang
-  terasa seperti sentakan. Diganti satu gerakan kamera halus, *ease-in-out*,
-  durasi ±1 detik (`cameraFlyBump` di `animation.js`), menyatu dengan smooth
-  scroll otomatis ke About. Hero tidak pernah dihilangkan — hanya mengecil,
-  naik sedikit (`y: -60`), dan opacity turun ke ~0.24 (tetap terlihat samar
-  di atas), diproses lewat scrub yang di-*lock* ke tinggi `.hero` itu sendiri
-  (bukan ke posisi `#about`) agar tidak meleset kalau tinggi section berubah.
-- **Bug "About kadang tidak muncul" — root cause ditemukan & diperbaiki**:
-  reveal animation lama membuat tween `.from()` di dalam `scrollTrigger`
-  yang langsung menerapkan `opacity:0` ke DOM saat dibuat, sebelum trigger-nya
-  aktif — kalau kalkulasi posisi meleset, section itu permanen tak terlihat.
-  Sekarang `initAboutReveal()` memakai **IntersectionObserver**: opacity:0
-  baru diterapkan tepat saat About benar-benar masuk viewport, plus safety-net
-  ganda (re-check setelah `load`, dan `clearProps` di akhir animasi) sehingga
-  section ini **tidak mungkin lagi stuck tersembunyi**.
-- **Scroll patah di HP**: Lenis sebelumnya hanya men-smoothing scroll roda
-  mouse (`smoothWheel`) — scroll sentuh sama sekali tidak di-smoothing.
-  Ditambahkan `syncTouch: true` sehingga scroll di layar sentuh ikut halus.
-- **Performance pass**: resize di-throttle lewat rAF (bukan per event mentah),
-  render loop di-skip saat tab tidak aktif (`document.hidden`), backdrop-filter
-  blur & box-shadow diperkecil signifikan di breakpoint mobile/tablet, dan
-  `overscroll-behavior` dimatikan untuk menghindari bounce native yang bentrok
-  dengan Lenis.
-- **UI polish** ringan tanpa mengubah desain utama: glow tombol & dekorasi
-  diperhalus (radius/opacity dikurangi sedikit), ditambah `:focus-visible`
-  untuk aksesibilitas keyboard.
-- Hierarki section didokumentasikan langsung di `index.html` (komentar) agar
-  Prompt 6 tahu persis di mana menyisipkan Projects & Contact tanpa merusak
-  struktur satu-halaman-scroll yang sudah ada.
-
-### Catatan perbaikan (bug fix pass)
-
-Foundation ini sudah melalui satu putaran perbaikan untuk memastikan
-**0 error di console** dan background tidak pernah tampil putih:
-
-- Semua akses DOM di `ui.js` sekarang lewat helper `safeQuery()` yang
-  null-check otomatis + `console.warn` jika elemen tidak ditemukan —
-  tidak ada lagi kemungkinan `Cannot set properties of null`.
-- `main.js` dibungkus dalam `bootstrap()` yang dijalankan setelah
-  `DOMContentLoaded`, dengan `try/catch` di setiap tahap dan
-  `window.addEventListener('error', ...)` sebagai jaring pengaman global.
-- CSS tidak lagi memakai `@import` berantai di `style.css`. Setiap file
-  CSS (`variables.css`, `style.css`, `layout.css`, `animation.css`,
-  `responsive.css`) sekarang di-`<link>` langsung di `index.html` secara
-  paralel, plus ada **critical CSS inline** di `<head>` sebagai lapisan
-  pertahanan pertama supaya background selalu gelap premium sejak render
-  pertama.
-
-## Struktur Project
-
-```
-NexusPortfolio/
-├── index.html                 # Entry point HTML + import map (Three.js & GSAP via CDN)
-├── assets/
-│   ├── css/
-│   │   ├── style.css          # Entry point CSS (mengimpor modul di bawah)
-│   │   ├── variables.css      # Design tokens: warna, tipografi, spacing, easing
-│   │   ├── layout.css         # Struktur layout: hero, glass panel, nav
-│   │   ├── animation.css      # Keyframes & transisi CSS ringan
-│   │   └── responsive.css     # Breakpoint desktop / tablet / mobile
-│   ├── js/
-│   │   ├── main.js            # Entry point JS — merangkai semua modul
-│   │   ├── scene.js           # Setup THREE.Scene
-│   │   ├── camera.js          # Setup PerspectiveCamera + handler resize
-│   │   ├── controls.js        # Setup OrbitControls
-│   │   ├── loader.js          # LoadingManager & loader dasar (siap dipakai)
-│   │   ├── animation.js       # Konfigurasi & timeline dasar GSAP
-│   │   ├── ui.js               # Interaksi UI non-3D (loader, tombol, dsb)
-│   │   └── effects.js         # Placeholder efek visual tambahan
-│   ├── textures/              # Aset tekstur (kosong — untuk prompt berikutnya)
-│   ├── models/                # Model 3D .glb/.gltf (kosong — untuk prompt berikutnya)
-│   ├── images/                # Gambar statis (kosong — untuk prompt berikutnya)
-│   └── fonts/                 # Font lokal opsional (saat ini pakai Google Fonts CDN)
-├── README.md
-└── LICENSE
-```
-
-## Teknologi
-
-| Teknologi     | Keterangan                                      |
-|---------------|--------------------------------------------------|
-| HTML5 / CSS3  | Struktur & styling murni, tanpa preprocessor     |
-| JavaScript ES Modules | Tanpa bundler — dimuat langsung via `<script type="module">` |
-| Three.js `0.160.0` | Scene, camera, renderer, OrbitControls, dimuat via CDN (`jsdelivr`) melalui import map |
-| GSAP `3.12.5` | Orkestrasi animasi, dimuat via CDN melalui import map |
-
-Tidak ada proses build. Semua dependency diambil langsung dari CDN lewat
-`<script type="importmap">` di `index.html`, sehingga project bisa langsung
-dibuka di browser atau di-deploy ke GitHub Pages tanpa langkah kompilasi.
-
-## Menjalankan Secara Lokal
-
-Karena project menggunakan ES Modules, buka file `index.html` **melalui
-local server**, bukan langsung dari `file://` (browser modern memblokir
-`import` pada protokol file). Contoh:
+### Option A — Open directly
+Because this project uses native ES modules and `fetch()` for JSON data, most browsers require it to be served over `http://` (not `file://`). Use any simple static server:
 
 ```bash
-# Opsi 1: Python
+# Python 3
 python3 -m http.server 8000
 
-# Opsi 2: VS Code Live Server extension
+# Node (npx, no install needed)
+npx serve .
 ```
 
-Lalu buka `http://localhost:8000` di browser.
+Then open `http://localhost:8000` in your browser.
 
-## Deploy ke GitHub Pages
+### Option B — VS Code Live Server
+Install the "Live Server" extension and click "Go Live" from `index.html`.
 
-1. Push seluruh isi folder `NexusPortfolio/` ke branch `main` (atau `gh-pages`).
-2. Buka **Settings → Pages** pada repository.
-3. Pilih branch & folder root (`/`), lalu simpan.
-4. Situs akan tersedia di `https://<username>.github.io/<nama-repo>/`.
+## Deploying to GitHub Pages
 
-## Roadmap (Prompt Berikutnya)
+1. Push this repository to GitHub.
+2. Go to **Settings → Pages**.
+3. Under "Build and deployment", set **Source** to `Deploy from a branch`.
+4. Choose your branch (e.g. `main`) and root folder `/`.
+5. Save. GitHub will publish the site at `https://<username>.github.io/<repo-name>/`.
 
-- Menambahkan object 3D utama (signature element) ke dalam `scene.js`.
-- Mengisi `loader.js` dengan `GLTFLoader` untuk model di `assets/models/`.
-- Menambahkan section portfolio, about, dan contact.
-- Mengaktifkan `effects.js` (post-processing / partikel ambient).
-- Menambahkan scroll-triggered animation dengan GSAP `ScrollTrigger`.
+No build step is required — GitHub Pages serves the static files as-is.
 
-## Lisensi
+## Project Structure
 
-Lihat file [LICENSE](./LICENSE).
+```
+InternetMap/
+├── index.html              # Entry point — loading screen, canvas, UI shell
+├── README.md
+├── LICENSE
+└── assets/
+    ├── css/
+    │   ├── variables.css    # Design tokens (colors, spacing, typography)
+    │   ├── style.css        # Reset + base element styles
+    │   ├── layout.css       # Structural positioning of major regions
+    │   ├── glass.css        # Glassmorphism panel styling
+    │   ├── animation.css    # Keyframes & transition utilities
+    │   └── responsive.css   # Breakpoint adjustments
+    ├── js/
+    │   ├── main.js          # Entry point — wires all modules together
+    │   ├── scene.js         # Three.js Scene construction
+    │   ├── camera.js        # Perspective camera setup
+    │   ├── renderer.js      # WebGLRenderer setup
+    │   ├── controls.js      # OrbitControls wrapper
+    │   ├── loader.js        # Loading screen + data preloading
+    │   ├── ui.js            # Search / sidebar / audio toggle / HUD wiring
+    │   └── utils.js         # Shared helper functions
+    ├── data/
+    │   ├── websites.json    # Sample website node data
+    │   └── connections.json # Sample link data between websites
+    ├── textures/            # (reserved for future 3D textures)
+    ├── logos/               # (reserved for future website logo sprites)
+    ├── audio/               # (reserved for future ambient audio)
+    └── images/              # (reserved for future UI/marketing images)
+```
+
+## Module Flow
+
+```
+main.js
+  ├─ loader.js     → loads websites.json / connections.json, drives loading bar
+  ├─ scene.js      → creates THREE.Scene + base lighting
+  ├─ camera.js     → creates THREE.PerspectiveCamera
+  ├─ renderer.js   → creates THREE.WebGLRenderer bound to #scene-canvas
+  ├─ controls.js   → creates OrbitControls bound to camera + renderer
+  └─ ui.js         → wires search input, sidebar close, audio toggle, HUD
+```
+
+All modules communicate exclusively through ES module imports/exports — no globals, no inline scripts.
+
+## What's Next (Future Phases)
+
+- Rendering website nodes as 3D "planets" using `data/websites.json`
+- Rendering connection lines using `data/connections.json`
+- Real search + sidebar detail population
+- Minimap camera projection
+- Ambient audio playback
+- Texture/logo loading for individual nodes
+
+## License
+
+See [LICENSE](./LICENSE).

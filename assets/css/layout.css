@@ -1,758 +1,628 @@
 /* ==========================================================================
-   NEXUS — Layout
-   Struktur utama halaman: canvas 3D full-screen, hero section, glass panel.
-   Reset dasar & style body ada di style.css (base.css tidak dipisah agar
-   tetap sesuai struktur project yang diminta).
+   LAYOUT — Structural positioning of major regions
    ========================================================================== */
 
-/* ---------- Canvas Three.js (latar belakang scene) ---------- */
-#nexus-canvas {
+/* ---- Loading screen ---- */
+#loading-screen {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: var(--z-canvas);
-  display: block;
-  will-change: transform;
-}
-
-/* ---------- Lapisan noise/grain halus di atas canvas ---------- */
-.noise-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-noise);
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* ---------- Loader awal ---------- */
-.nexus-loader {
-  position: fixed;
-  inset: 0;
-  z-index: var(--z-overlay);
+  z-index: var(--z-loading);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-void, #08080d);
-  transition: opacity var(--dur-slow) var(--ease-premium), visibility var(--dur-slow);
-  /* FIX (5.6.1) — CSS-only failsafe: loader ini WAJIB hilang sendiri walau
-     JS gagal total (mis. salah satu CDN di importmap gagal/telat dimuat di
-     GitHub Pages). Tanpa ini, overlay full-screen ini bisa nyangkut selamanya
-     dan menutupi/memblokir klik ke seluruh Hero & About di baliknya — exact
-     match dengan gejala "semua konten hilang". JS (loader.js) tetap
-     menyembunyikannya lebih cepat & mulus lewat class .is-hidden dalam
-     kondisi normal; animation ini murni jaring pengaman kalau itu gagal. */
-  animation: nexus-loader-failsafe 0.6s ease 4s forwards;
+  background: var(--color-bg-void);
 }
 
-@keyframes nexus-loader-failsafe {
-  to {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-  }
-}
-
-.nexus-loader__mark {
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  letter-spacing: var(--tracking-wide);
-  color: var(--text-muted, #74748a);
-  text-transform: uppercase;
-}
-
-.nexus-loader.is-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* ---------- Navigasi minimal ---------- */
-.nexus-nav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-nav);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-md) var(--space-lg);
-}
-
-.nexus-nav__logo {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: var(--fs-small);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  transition: color var(--dur-fast) var(--ease-soft), letter-spacing var(--dur-fast) var(--ease-soft);
-}
-
-.nexus-nav__logo:hover {
-  color: var(--accent-cyan);
-  letter-spacing: 0.32em;
-}
-
-.nexus-nav__coords {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  color: var(--text-muted);
-  letter-spacing: 0.15em;
-  display: flex;
-  gap: var(--space-sm);
-}
-
-/* ---------- Hero Section ---------- */
-.hero {
-  position: relative;
-  z-index: var(--z-content);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-lg);
-}
-
-.hero__ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: min(58vw, 620px);
-  height: min(58vw, 620px);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: -1;
-  opacity: 0.55;
-}
-
-.hero__panel {
-  position: relative;
-  width: 100%;
-  max-width: 720px;
+#loading-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
   gap: var(--space-md);
-  padding: var(--space-2xl) var(--space-lg);
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  box-shadow: var(--glass-shadow);
-  transform-style: preserve-3d;
-  will-change: transform;
+  width: min(320px, 80vw);
 }
 
-.hero__eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--accent-cyan);
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
+#loading-title {
+  font-size: var(--fs-xl);
+  letter-spacing: 0.25em;
 }
 
-.hero__eyebrow::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-cyan);
-  box-shadow: 0 0 8px var(--accent-cyan); /* diperhalus (5.6): glow tetap terasa, lebih ringan */
-}
-
-.hero__title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-hero);
-  line-height: 0.95;
-  letter-spacing: var(--tracking-tight);
-  /* FIX (5.6.1): fallback ditambahkan langsung di var() gradient di bawah —
-     dengan ini, gradient SELALU valid & solid, tidak mungkin lagi jatuh ke
-     "invalid background + color:transparent" = teks hilang, apa pun status
-     variables.css. */
-  background: linear-gradient(180deg, var(--text-primary, #f5f5fb) 0%, var(--text-secondary, #b9b9c9) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  transition: filter var(--dur-medium) var(--ease-soft);
-}
-
-.hero__title:hover {
-  filter: brightness(1.15);
-}
-
-.hero__subtitle {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: clamp(1rem, 2vw, 1.25rem);
-  color: var(--text-secondary);
-  max-width: 32ch;
-}
-
-.hero__axis {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.2em;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
-
-.hero__axis span {
-  color: var(--accent-violet);
-}
-
-/* ---------- Tombol utama ---------- */
-.btn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: 0.9rem 2rem;
-  margin-top: var(--space-sm);
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: var(--fs-small);
-  letter-spacing: 0.03em;
-  color: var(--bg-void, #08080d); /* FIX (5.6.1): fallback — tombol tidak boleh transparan/hilang */
-  background: var(--accent-gradient, linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%));
-  border: none;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
+#loading-bar-track {
+  width: 100%;
+  height: 3px;
+  background: var(--color-glass-border);
+  border-radius: var(--radius-full);
   overflow: hidden;
-  isolation: isolate;
-  --mx: 50%;
-  --my: 50%;
-  will-change: transform, box-shadow;
 }
 
-/* Glow yang mengikuti posisi kursor di atas tombol (di-update lewat JS via --mx/--my). */
-.btn::before {
-  content: '';
+#loading-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-accent-primary), var(--color-accent-secondary));
+}
+
+#loading-status {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* ---- App container ---- */
+#landing-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---- Canvas ---- */
+#scene-canvas {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  background: radial-gradient(120px circle at var(--mx) var(--my), rgba(255, 255, 255, 0.55), transparent 70%);
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease-soft);
+  z-index: var(--z-canvas);
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ==========================================================================
+   PHASE 9 — Focus Mode overlay + persistent label
+   ========================================================================== */
+#focus-blur-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-focus);
+  pointer-events: none;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  background: rgba(5, 6, 10, 0);
+  transition: backdrop-filter var(--duration-slow) var(--ease-default),
+              -webkit-backdrop-filter var(--duration-slow) var(--ease-default),
+              background var(--duration-slow) var(--ease-default);
+}
+
+#focus-blur-overlay.is-active {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: rgba(5, 6, 10, 0.35);
+}
+
+#focus-label {
+  position: absolute;
+  top: var(--space-lg);
+  left: 50%;
+  z-index: var(--z-focus);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   pointer-events: none;
 }
 
-.btn:hover::before {
-  opacity: 1;
+#focus-label-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
-.btn > * {
+#focus-label-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+#focus-label-dot {
+  font-size: 8px;
+}
+
+/* ---- Top bar ---- */
+#topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-topbar);
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  padding: var(--space-md) var(--space-lg);
+}
+
+#brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+#brand-mark {
+  color: var(--color-accent-primary);
+}
+
+#brand-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+#search-container {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+#search-results {
+  position: absolute;
+  top: calc(100% + var(--space-sm));
+  left: 0;
+  right: 0;
+}
+
+#audio-toggle {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+}
+
+/* ---- Sidebar ---- */
+/* ==========================================================================
+   SIDEBAR — Premium panel (Desktop: right drawer | Mobile: bottom sheet)
+   ========================================================================== */
+
+#sidebar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-sidebar);
+  width: min(400px, 92vw);
+  padding: 0;
+  overflow: hidden;
+  transform-origin: right center;
+  display: flex;
+  flex-direction: column;
+  /* Remove default border-radius from glass.css for premium shape */
+  border-radius: 20px 0 0 20px !important;
+  border-right: none !important;
+}
+
+/* Scrollable inner container so header stays pinned */
+#sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: var(--space-lg) var(--space-lg) var(--space-xl);
+  /* Custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-glass-border) transparent;
+}
+
+#sidebar-content::-webkit-scrollbar {
+  width: 4px;
+}
+#sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+#sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--color-glass-border);
+  border-radius: 4px;
+}
+
+/* ── HEADER PREMIUM ─────────────────────────────────────────────────────── */
+.sidebar-header-premium {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
+  position: relative;
+}
+
+/* Logo container — square with frosted glass ring */
+.sidebar-logo-premium {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: var(--color-glass-highlight);
+  border: 1px solid var(--color-glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.sidebar-logo-img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.sidebar-logo-fallback {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: #fff;
+}
+
+.sidebar-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar-title-premium {
+  font-family: var(--font-display);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 6px;
+}
+
+.sidebar-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sidebar-category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+
+.sidebar-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent-success);
+  box-shadow: 0 0 6px var(--color-accent-success);
+  animation: sidebar-pulse 2s ease-in-out infinite;
+}
+
+@keyframes sidebar-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--color-accent-success); }
+  50% { opacity: 0.7; box-shadow: 0 0 12px var(--color-accent-success); }
+}
+
+.sidebar-status-label {
+  font-size: 11px;
+  color: var(--color-accent-success);
+  font-weight: 500;
+}
+
+/* Close button inside header */
+.sidebar-close-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: var(--color-glass-highlight);
+  border: 1px solid var(--color-glass-border);
+  transition: color var(--duration-fast), background var(--duration-fast);
+}
+
+.sidebar-close-btn:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ── DIVIDER ─────────────────────────────────────────────────────────────── */
+.sidebar-divider {
+  height: 1px;
+  width: 100%;
+  margin: 0 0 var(--space-md);
+  opacity: 0.6;
+}
+
+/* ── DESCRIPTION ─────────────────────────────────────────────────────────── */
+.sidebar-description-premium {
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-lg);
+}
+
+/* ── META GRID ───────────────────────────────────────────────────────────── */
+.sidebar-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.sidebar-meta-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--color-glass-highlight);
+  border: 1px solid var(--color-glass-border);
+}
+
+.sidebar-meta-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 1px;
+  filter: saturate(0.7);
+}
+
+.sidebar-meta-card-inner {
+  min-width: 0;
+  flex: 1;
+}
+
+.sidebar-meta-label {
+  display: block;
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 3px;
+}
+
+.sidebar-meta-value {
+  display: block;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── CONNECTED WEBSITES ──────────────────────────────────────────────────── */
+.sidebar-related-premium {
+  margin-bottom: var(--space-lg);
+}
+
+.sidebar-related-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.sidebar-related-title-premium {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.sidebar-related-list-premium {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* .sidebar-conn-item-premium and children — defined in glass.css (Phase 11B) */
+
+/* ── VISIT BUTTON PREMIUM ────────────────────────────────────────────────── */
+.sidebar-visit-btn-premium {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px var(--space-lg);
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--planet-color, var(--color-accent-primary)), var(--color-accent-secondary));
+  box-shadow: 0 0 28px rgba(91, 140, 255, 0.45),
+              inset 0 1px 0 rgba(255,255,255,0.18);
+  overflow: hidden;
+  transition: transform var(--duration-fast) var(--ease-default),
+              box-shadow var(--duration-fast) var(--ease-default);
+  text-decoration: none;
+  margin-top: var(--space-xs);
+}
+
+.sidebar-visit-btn-premium:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 0 44px rgba(91, 140, 255, 0.65),
+              inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+.sidebar-visit-btn-label {
   position: relative;
   z-index: 1;
 }
 
-/* Ripple: elemen dibuat dinamis lewat JS (ui.js) saat klik. */
-.btn__ripple {
+.sidebar-visit-btn-premium svg {
+  position: relative;
+  z-index: 1;
+  transition: transform var(--duration-fast);
+}
+
+.sidebar-visit-btn-premium:hover svg {
+  transform: translateX(3px);
+}
+
+/* Ripple */
+.sidebar-visit-ripple {
   position: absolute;
-  z-index: 0;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
+  width: 0;
+  height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
+  background: rgba(255,255,255,0.25);
+  transform: translate(-50%, -50%);
   pointer-events: none;
-  animation: nexus-ripple 0.6s var(--ease-soft) forwards;
 }
 
-.btn__arrow {
-  transition: transform var(--dur-fast) var(--ease-soft);
+.sidebar-visit-ripple.is-active {
+  animation: sidebar-ripple 0.6s ease-out forwards;
 }
 
-.btn:hover .btn__arrow {
-  transform: translateX(4px);
+@keyframes sidebar-ripple {
+  to {
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+  }
 }
 
-/* ---------- Footer indikator scroll ---------- */
-.hero__scroll-hint {
-  position: absolute;
-  bottom: var(--space-lg);
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: var(--z-content);
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-wide);
-  color: var(--text-muted);
-  text-transform: uppercase;
+/* ── LEGACY CLASSES (kept for galaxy sidebar + backward compat) ─────────── */
+.sidebar-header {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
 }
 
-.hero__scroll-line {
-  width: 1px;
-  height: 32px;
-  background: linear-gradient(180deg, var(--text-muted), transparent);
-}
-
-/* ==========================================================================
-   About Section (Prompt 3)
-   ========================================================================== */
-
-.about {
-  position: relative;
-  z-index: var(--z-content);
-  padding: var(--space-2xl) var(--space-lg);
-  overflow: hidden;
-  /* FIX (5.6) — defensive default: About TIDAK BOLEH pernah tersembunyi lewat
-     CSS. Reveal animation (animation.js) hanya mengontrol opacity anak-anaknya
-     saat runtime lewat inline style, section pembungkus ini sendiri harus selalu
-     tampil apa pun yang terjadi pada JS/animasi. */
-  display: block;
-  visibility: visible;
-  opacity: 1;
-}
-
-.about__bg {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: radial-gradient(60% 50% at 20% 20%, rgba(124, 92, 255, 0.14), transparent 70%),
-    radial-gradient(50% 45% at 85% 70%, rgba(0, 229, 255, 0.1), transparent 70%);
-  pointer-events: none;
-}
-
-.about__blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.35;
-  will-change: transform;
-}
-
-.about__blob--a {
-  width: 320px;
-  height: 320px;
-  top: 5%;
-  left: -5%;
-  background: var(--accent-violet);
-  animation: nexus-float-blob 16s ease-in-out infinite;
-}
-
-.about__blob--b {
-  width: 260px;
-  height: 260px;
-  bottom: 0%;
-  right: 0%;
-  background: var(--accent-cyan);
-  animation: nexus-float-blob 20s ease-in-out infinite reverse;
-}
-
-.about__grid {
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: var(--space-2xl);
-  align-items: center;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.about__content {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  gap: var(--space-sm);
-}
-
-.about__eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--accent-cyan);
-}
-
-.about__title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-h2);
-  line-height: 1.1;
-  letter-spacing: var(--tracking-tight);
-  transition: letter-spacing var(--dur-medium) var(--ease-soft);
-}
-
-.about__title:hover {
-  letter-spacing: 0.01em;
-}
-
-.about__role {
-  font-family: var(--font-mono);
-  font-size: var(--fs-small);
-  color: var(--accent-violet);
-  letter-spacing: 0.05em;
-}
-
-.about__desc {
-  color: var(--text-secondary);
-  max-width: 46ch;
-  line-height: 1.6;
-}
-
-.about__buttons {
-  display: flex;
-  gap: var(--space-sm);
-  margin-top: var(--space-sm);
-  flex-wrap: wrap;
-}
-
-/* Varian outline untuk tombol sekunder (Download CV) */
-.btn--outline {
-  background: transparent;
-  color: var(--text-primary, #f5f5fb);
-  border: 1px solid var(--glass-border);
-}
-
-.btn--outline::before {
-  background: radial-gradient(120px circle at var(--mx) var(--my), rgba(124, 92, 255, 0.35), transparent 70%);
-}
-
-/* ---------- Interactive Card (About) ---------- */
-.about__card {
-  position: relative;
-  padding: var(--space-lg);
-  border-radius: var(--radius-lg);
-  background: var(--glass-bg-strong);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-  box-shadow: var(--glass-shadow);
-  overflow: hidden;
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-.about__card-glow {
-  position: absolute;
-  inset: -40%;
-  background: radial-gradient(circle at 30% 20%, var(--accent-violet-soft), transparent 60%);
-  opacity: 0.7;
-  pointer-events: none;
-}
-
-.about__card-eyebrow {
-  position: relative;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--accent-cyan);
-}
-
-.about__card-title {
-  position: relative;
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-  margin: var(--space-sm) 0;
-  line-height: 1.3;
-}
-
-.about__card-text {
-  position: relative;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-/* Reflection halus di bagian bawah card */
-.about__card-reflection {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 40%;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.04));
-  pointer-events: none;
-}
-
-/* ---------- Stat Cards ---------- */
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-sm);
-  max-width: 1200px;
-  margin: var(--space-2xl) auto 0;
-}
-
-.stat-card {
-  position: relative;
-  padding: var(--space-md);
+.sidebar-logo {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
   border-radius: var(--radius-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  transition: transform var(--dur-fast) var(--ease-soft), box-shadow var(--dur-fast) var(--ease-soft),
-    border-color var(--dur-fast) var(--ease-soft);
-}
-
-.stat-card:hover {
-  transform: translateY(-6px);
-  border-color: var(--accent-violet-soft);
-  box-shadow: 0 16px 40px rgba(124, 92, 255, 0.18);
-}
-
-.stat-card__value {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.8rem;
-  background: var(--accent-gradient, linear-gradient(135deg, #7c5cff 0%, #00e5ff 100%)); /* FIX (5.6.1) */
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.stat-card__label {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-/* ---------- Cursor Glow ---------- */
-.cursor-glow {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 260px;
-  height: 260px;
-  margin: -130px 0 0 -130px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(124, 92, 255, 0.16), transparent 70%);
-  pointer-events: none;
-  z-index: var(--z-noise);
-  mix-blend-mode: screen;
-  will-change: transform;
-}
-
-/* ==========================================================================
-   Prompt 5 — About enhancements, floating elements, typography hierarchy
-   ========================================================================== */
-
-.about__focus {
-  color: var(--text-muted);
-  font-size: var(--fs-small);
-}
-
-.about__focus span {
-  color: var(--accent-cyan);
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-}
-
-/* ---------- Tech stack chips ---------- */
-.tech-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  list-style: none;
-  margin-top: 0.25rem;
-}
-
-.tech-chip {
-  padding: 0.4rem 0.9rem;
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: 0.04em;
-  color: var(--text-secondary);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-pill);
-  transition: transform var(--dur-fast) var(--ease-soft), border-color var(--dur-fast) var(--ease-soft),
-    color var(--dur-fast) var(--ease-soft);
-}
-
-.tech-chip:hover {
-  transform: translateY(-3px);
-  border-color: var(--accent-violet-soft);
-  color: var(--text-primary);
-}
-
-/* ---------- Floating decorative elements (glow dot / ring / hexagon) ---------- */
-.floating-el {
-  position: absolute;
-  z-index: -1;
-  pointer-events: none;
-  will-change: transform;
-}
-
-.floating-el--dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-cyan);
-  box-shadow: 0 0 16px 2px var(--accent-cyan-soft);
-  animation: nexus-float-el 9s ease-in-out infinite;
-}
-
-.floating-el--ring {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 1px solid var(--accent-violet-soft);
-  animation: nexus-float-el 12s ease-in-out infinite reverse;
-}
-
-.floating-el--hex {
-  width: 18px;
-  height: 18px;
-  background: transparent;
-  border: 1px solid var(--accent-cyan-soft);
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  animation: nexus-float-el 14s ease-in-out infinite;
-}
-
-/* ==========================================================================
-   Prompt 5.5 — Bug fix, UI polish, UX overhaul
-   ========================================================================== */
-
-/* ---------- Loader progress bar ---------- */
-.nexus-loader__bar {
-  width: 160px;
-  height: 2px;
-  margin-top: var(--space-sm);
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-}
-
-.nexus-loader__bar-fill {
-  width: 0%;
-  height: 100%;
-  background: var(--accent-gradient);
-  transition: width 0.35s var(--ease-soft);
-}
-
-/* ---------- GPU layer hints untuk elemen yang sering dianimasikan ---------- */
-.hero__panel,
-.about__card,
-.cursor-glow,
-.nexus-loader {
-  transform: translateZ(0);
-}
-
-.hero,
-.about {
-  contain: layout style;
-}
-
-/* ---------- Border glow tipis + shadow lebih lembut pada glass card ---------- */
-.hero__panel,
-.about__card {
-  box-shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
-}
-
-.about__card {
-  position: relative;
-}
-
-.about__card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, var(--accent-violet-soft), transparent 40%, var(--accent-cyan-soft));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* ---------- Cursor glow — state aktif saat hover elemen interaktif ---------- */
-.cursor-glow {
-  transition: width var(--dur-medium) var(--ease-soft), height var(--dur-medium) var(--ease-soft),
-    margin var(--dur-medium) var(--ease-soft), opacity var(--dur-medium) var(--ease-soft);
-}
-
-.cursor-glow.is-active {
-  width: 380px;
-  height: 380px;
-  margin: -190px 0 0 -190px;
-  filter: brightness(1.4);
-}
-
-/* ---------- Avatar placeholder ---------- */
-.about__avatar {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-cyan);
-  background: linear-gradient(135deg, rgba(124, 92, 255, 0.25), rgba(0, 229, 255, 0.15));
-  border: 1px solid var(--glass-border);
-  margin-bottom: var(--space-sm);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  color: #05060a;
+  box-shadow: var(--shadow-glow);
 }
 
-.about__avatar svg {
-  width: 26px;
-  height: 26px;
+.sidebar-galaxy-swatch {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  box-shadow: var(--shadow-glow);
 }
 
-/* ---------- Timeline singkat di dalam About card ---------- */
-.timeline {
-  list-style: none;
-  margin-top: var(--space-md);
+.sidebar-title {
+  font-size: var(--fs-lg);
+  line-height: 1.2;
+}
+
+.sidebar-subtitle {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+.sidebar-description {
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+/* ── RESPONSIVE: MOBILE BOTTOM SHEET ────────────────────────────────────── */
+@media (max-width: 640px) {
+  #sidebar {
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-height: 75vh;
+    border-radius: 20px 20px 0 0 !important;
+    transform-origin: bottom center !important;
+  }
+
+  /* On mobile, GSAP's xPercent slide doesn't work well for bottom sheet.
+     We override the transform in JS via a data attribute. */
+  #sidebar[data-mobile-sheet] {
+    transform: translateY(0) !important;
+  }
+
+  .sidebar-meta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Bottom sheet drag handle */
+  #sidebar::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: var(--color-glass-border);
+    border-radius: 4px;
+    margin: 10px auto 0;
+  }
+}
+
+/* ── RESPONSIVE: TABLET ──────────────────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 1024px) {
+  #sidebar {
+    width: min(340px, 92vw);
+  }
+
+  .sidebar-meta-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ---- Minimap ---- */
+#minimap {
+  position: absolute;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  z-index: var(--z-hud);
+  width: 160px;
+  height: 160px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+#minimap-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- HUD ---- */
+#hud {
+  position: absolute;
+  bottom: var(--space-lg);
+  left: var(--space-lg);
+  z-index: var(--z-hud);
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  position: relative;
-}
-
-.timeline li {
-  position: relative;
-  padding-left: 1.4rem;
-  font-size: var(--fs-small);
-  color: var(--text-secondary);
-  line-height: 1.5;
-}
-
-.timeline__dot {
-  position: absolute;
-  left: 0;
-  top: 0.35em;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-cyan);
-  box-shadow: 0 0 8px var(--accent-cyan-soft);
-}
-
-.timeline__year {
-  font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  color: var(--accent-violet);
-  margin-right: 0.4em;
-}
-
-/* ---------- Tech chip dengan ikon ---------- */
-.tech-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.tech-chip svg {
-  width: 14px;
-  height: 14px;
-  color: var(--accent-cyan);
+  gap: 2px;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
 }
