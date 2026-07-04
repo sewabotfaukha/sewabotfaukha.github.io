@@ -114,11 +114,15 @@
        style.css) supaya browser bisa mengambil semua file secara paralel
        dan lebih tahan terhadap kegagalan satu file di hosting statis
        seperti GitHub Pages. Urutan ini WAJIB dijaga. -->
-  <link rel="stylesheet" href="assets/css/variables.css" />
-  <link rel="stylesheet" href="assets/css/style.css" />
-  <link rel="stylesheet" href="assets/css/layout.css" />
-  <link rel="stylesheet" href="assets/css/animation.css" />
-  <link rel="stylesheet" href="assets/css/responsive.css" />
+  <!-- FIX (5.6.2) — cache-busting: GitHub Pages/CDN & browser cache sering
+       menyajikan versi file lama kalau nama file tidak berubah antar deploy,
+       walau kode sumbernya sudah benar-benar diperbaiki. Query string ?v=
+       memaksa browser mengambil ulang file yang benar-benar terbaru. -->
+  <link rel="stylesheet" href="assets/css/variables.css?v=5.6.2" />
+  <link rel="stylesheet" href="assets/css/style.css?v=5.6.2" />
+  <link rel="stylesheet" href="assets/css/layout.css?v=5.6.2" />
+  <link rel="stylesheet" href="assets/css/animation.css?v=5.6.2" />
+  <link rel="stylesheet" href="assets/css/responsive.css?v=5.6.2" />
 
   <!-- ============ Import Map: Three.js & GSAP via CDN (tanpa build tools) ============ -->
   <script type="importmap">
@@ -321,7 +325,7 @@
   -->
 
   <!-- ============ Entry Point JavaScript (ES Module) ============ -->
-  <script type="module" src="assets/js/main.js"></script>
+  <script type="module" src="assets/js/main.js?v=5.6.2"></script>
 
   <!--
     ============ Visibility Watchdog (Prompt 5.6.1) ============

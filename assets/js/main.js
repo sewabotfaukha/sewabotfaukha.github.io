@@ -7,10 +7,12 @@
 
 import * as THREE from 'three';
 
-import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js';
-import { createCamera, updateCameraOnResize } from './camera.js';
-import { createCameraRig } from './controls.js';
-import { createLoadingManager } from './loader.js';
+// FIX (5.6.2) — cache-busting: query string ?v= pada tiap import lokal supaya
+// browser tidak diam-diam memakai versi file .js lama dari cache setelah deploy baru.
+import { createScene, createHeroObject, createStarfield, createAmbientParticles, createNebulaBackdrop, createLighting, createSoftShadow, applyEnvironmentReflection } from './scene.js?v=5.6.2';
+import { createCamera, updateCameraOnResize } from './camera.js?v=5.6.2';
+import { createCameraRig } from './controls.js?v=5.6.2';
+import { createLoadingManager } from './loader.js?v=5.6.2';
 import {
   configureGsapDefaults,
   playIntroTimeline,
@@ -22,9 +24,9 @@ import {
   initHeroScrollTransition,
   scrollToSelector,
   cameraFlyBump,
-} from './animation.js';
-import { initUI, hideLoader, setLoaderProgress } from './ui.js';
-import { initEffects } from './effects.js';
+} from './animation.js?v=5.6.2';
+import { initUI, hideLoader, setLoaderProgress } from './ui.js?v=5.6.2';
+import { initEffects } from './effects.js?v=5.6.2';
 
 function bootstrap() {
   const canvas = document.querySelector('#nexus-canvas');
