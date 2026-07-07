@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+    /* Offset supaya section tidak tertutup navbar sticky saat lompat via anchor link */
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased overflow-x-hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+
+  ::selection {
+    @apply bg-aitech-from/40 text-white;
+  }
+
+  /* Keyboard focus terlihat jelas di seluruh elemen interaktif — dasar aksesibilitas */
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid #06b6d4;
+    outline-offset: 2px;
+  }
+}
+
+/* Hormati preferensi pengguna yang mengaktifkan "reduce motion" di OS/browser */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto;
+  }
+}
